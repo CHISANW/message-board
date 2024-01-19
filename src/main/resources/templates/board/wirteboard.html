@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script th:inline="javascript">
+
+  function writeboard(){
+    const title = document.getElementById('title_input').value;
+    const writer = document.getElementById('writer_input').value;
+    const password = document.getElementById('password_input').value;
+    const content = document.getElementById('content_input').value;
+
+    var boardDto={
+      "title" :title,
+      "writer" : writer,
+      "password" : password,
+      "content": content
+    }
+
+    $.ajax({
+      url :"boardWrit",
+      method : "post",
+      contentType : "application/json",
+      data: JSON.stringify(boardDto),
+      success :function (response){
+        alert("저장성공");
+      },
+      error : function (xhr){
+        if (xhr.status ===500){
+          alert("서버 오류");
+        }
+        if (xhr.status ===400){
+          var ErrorMAp = JSON.parse(xhr.responseText);
+          console.log(ErrorMAp);
+        }
+      }
+    })
+
+    alert(title+writer+password+content);
+    alert("글쓰기 동작");
+  }
+</script>
+<body>
+
+<div th:object="${board}">
+
+  <div>
+    <label th:for="title"></label>
+    <span>제목</span><br/>
+    <input id="title_input" type="text" th:field="*{title}">
+  </div>
+
+  <div>
+    <label th:for="writer">
+      <span>작성자</span>
+    </label>
+    <br/>
+    <input id="writer_input" type="text" th:field="*{writer}">
+  </div>
+
+  <div>
+    <label th:for="password">
+      <span>비밀번호</span>
+    </label>
+    <br/>
+    <input id="password_input" type="password" th:field="*{password}">
+  </div>
+
+  <div>
+    <label th:for="content">
+      <span>내용</span>
+    </label>
+    <br/>
+    <textarea  id="content_input" type="" th:field="*{content}"></textarea>
+  </div>
+</div>
+
+<button onclick="writeboard()">글쓰기</button>
+
+</body>
+</html>
