@@ -24,7 +24,7 @@
       contentType : "application/json",
       data: JSON.stringify(boardDto),
       success :function (response){
-        alert("저장성공");
+        window.location.href="/board"
       },
       error : function (xhr){
         if (xhr.status ===500){
@@ -37,46 +37,39 @@
       }
     })
 
-    alert(title+writer+password+content);
-    alert("글쓰기 동작");
   }
 </script>
 <body>
 
-<div th:object="${board}">
-
-  <div>
-    <label th:for="title"></label>
-    <span>제목</span><br/>
-    <input id="title_input" type="text" th:field="*{title}">
+  <div class="container mt-5"th:object="${board}">
+    <div class="block table-responsive grid-view">
+        <table class="table table-bordered">
+          <caption class="hidden">자유게시판 입력폼으로 작성자, 제목, 내용으로 구성되어 있습니다.</caption>
+          <tbody>
+          <tr>
+            <th><label th:for="writer">작성자</label></th>
+            <td>
+              <input class="form-control" id="writer_input" type="text" th:field="*{writer}"></td>
+          </tr>
+          <tr>
+            <th><label th:for="title">제목</label></th>
+            <td colspan="3"><input class="form-control" id="title_input" type="text" th:field="*{title}"></td>
+          </tr>
+          <tr>
+            <th><label th:for="password">비밀번호</label></th>
+            <td colspan="3"><input class="form-control" id="password_input" type="password" th:field="*{password}"></td>
+          </tr>
+          <tr>
+            <th><label th:for="content">내용</label></th>
+            <td colspan="3">
+              <textarea class="form-control" th:field="*{content}"  id="content_input"rows="5" cols="80" style="height: 235px; width: 614px;"></textarea>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      <button onclick="writeboard()">글쓰기</button>
+    </div>
   </div>
-
-  <div>
-    <label th:for="writer">
-      <span>작성자</span>
-    </label>
-    <br/>
-    <input id="writer_input" type="text" th:field="*{writer}">
-  </div>
-
-  <div>
-    <label th:for="password">
-      <span>비밀번호</span>
-    </label>
-    <br/>
-    <input id="password_input" type="password" th:field="*{password}">
-  </div>
-
-  <div>
-    <label th:for="content">
-      <span>내용</span>
-    </label>
-    <br/>
-    <textarea  id="content_input" type="" th:field="*{content}"></textarea>
-  </div>
-</div>
-
-<button onclick="writeboard()">글쓰기</button>
 
 </body>
 </html>

@@ -14,7 +14,7 @@
 
 
 <div> 총 상품수 :
-    <span>19</span>
+    <span th:text="${page.totalElements}">19</span>
 </div>
 <div class="col-6 d-flex justify-center">
 
@@ -38,12 +38,14 @@
         <th scope="col">조회수</th>
     </tr>
     </thead>
-    <tbody>
+    <tbody th:each="boards : ${boardAll}">
     <tr>
-        <th scope="row">1</th>
-        <td>문서</td>
-        <td>김민우</td>
-        <td>오늘작성</td>
+        <th scope="row">
+            <a th:href="@{/board/{boardId}(boardId=${boards.id})}" th:text="${boards.id}"/>
+        </th>
+        <td th:text="${boards.title}">문서</td>
+        <td th:text="${boards.writer}">김민우</td>
+        <td th:text="${#temporals.format(boards.dateTime, 'yyyy-MM-dd')}">오늘작성</td>
         <td>1112</td>
     </tr>
     </tbody>
@@ -54,15 +56,16 @@
 </div>
 <nav aria-label="Page navigation example">
     <ul class="pagination justify-content-center">
-        <li class="page-item ">
-            <a class="page-link" href="#" aria-label="Previous">
+        <li class="page-item " th:classappend="${1 == page.pageable.pageNumber +1}?'disabled'">
+            <a class="page-link" href="#" th:href="@{/board(page=${page.pageable.pageNumber - 1})}" aria-label="Previous">
                 <span aria-hidden="true">&laquo;</span>
             </a>
         </li>
-        <li class="page-item">
-            <a class="page-link" href="#" >pageNumber</a></li>
-        <li class="page-item">
-            <a class="page-link" href="#" >
+        <li class="page-item" th:classappend="${i == page.pageable.pageNumber+1}? 'disabled'" th:each="i : ${#numbers.sequence(startPage,endPage)}">
+            <a class="page-link" href="#" th:href="@{/board(page=${i} -1)}" th:text="${i}" >pageNumber</a>
+        </li>
+        <li class="page-item" th:classappend="${page.totalPages == page.pageable.pageNumber +1 } ? 'disabled'">
+            <a class="page-link" href="#"  th:href="@{/board(page=${page.pageable.pageNumber+1})}">
                 <span aria-hidden="true">&raquo;</span>
             </a>
         </li>

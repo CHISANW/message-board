@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+<body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script th:inline="javascript">
+
+  var deleteValue = false;
+  function opList(){
+    window.location.href="/board";
+  }
+
+  function boardDelete(){
+    var BoardConfirm = confirm("정말로 삭제 하시겠습니까?");
+    const id = document.getElementById('input_id').value;
+
+    if (BoardConfirm){
+      var dto = {
+        "id": id
+      }
+      $.ajax({
+        url:"/delete",
+        method : "delete",
+        contentType : "application/json",
+        data : JSON.stringify(dto),
+        success : function (response){
+          alert("삭제성공");
+          window.location.href="/board";
+        },
+        error : function (xhr){
+          if (xhr.status === 500){
+            alert("삭제도중 오류발생");
+          }
+        }
+      });
+    }
+
+  }
+  function updateBoardPage(){
+    var boardId = document.getElementById('input_id').value;
+    console.log(boardId);
+    window.location.href="/board/update/"+boardId;
+  }
+
+</script>
+
+<div th:object="${board}">
+
+  <div class="container mt-4">
+    <div class="block table-responsive grid-view">
+      <table class="table table-bordered">
+        <caption class="hidden">HOME &gt; 소통/공감 &gt; 소통게시판 &gt; 자유게시판 메뉴의 게시물 정보이며 제목, 내용, 조회수, 등록자명, 등록일, 항목을 제공합니다.</caption>
+        <colgroup>
+          <col style="width:15%;">
+          <col>
+          <col style="width:15%;">
+          <col>
+        </colgroup>
+        <thead>
+        <tr>
+          <th colspan="4">
+            <div class="col-md-12">
+              <span th:text="*{title}"></span>
+            </div>
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <th>등록자명</th>
+          <td th:text="*{writer}"></td>
+          <th>등록일</th>
+          <td th:text="${#temporals.format(board.dateTime, 'yyyy-MM-dd')}">2024-01-20 15:46:22</td>
+        </tr>
+        <tr>
+          <th>조회수</th>
+          <td colspan="3">5</td>
+        </tr>
+        <tr>
+          <td colspan="4">
+            <div class="col-md-9 board-contents" th:text="*{content}">
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <input type="hidden" id="input_id" th:value="*{id}">
+  <div class="pull-right">
+    <button  type="button" class="btn" onclick="updateBoardPage()">수정</button>
+    <button type="button" onclick="boardDelete()" class="btn btn-danger">삭제</button>
+    <button type="button" class="btn btn-info" onclick="opList();">목록</button>
+  </div>
+
+</div>
+</body>
+</html>

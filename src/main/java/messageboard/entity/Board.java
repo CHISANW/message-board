@@ -29,8 +29,11 @@ public class Board {
     private LocalDateTime dateTime;
     private String content;
 
+    private Integer views;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_Id")
-    private Member member;
+
+    public void update(String title, String content){
+        this.title=title;
+        this.content = content;
+    }
 }

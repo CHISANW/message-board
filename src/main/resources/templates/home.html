@@ -8,10 +8,5 @@
 
 <h1>게시판 토이 프로젝트</h1>
 <a href="#" th:href="@{/board}"> 게시판으로 이동하기</a>
-
-<div th:if="${loginMember != null}">
-    <div th:text="'사용자 : '+ ${loginMember.username}"></div>
-</div>
-
 </body>
 </html>

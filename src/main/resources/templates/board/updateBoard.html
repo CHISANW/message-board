@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script th:inline="javascript">
+
+  function updateBoard(){
+    const title = document.getElementById('title_input').value;
+    const content = document.getElementById('content_input').value;
+    const id = document.getElementById('input_id').value;
+
+    var boardDto = {
+      "id" : id,
+      "title" : title,
+      "content" : content
+    }
+
+    $.ajax({
+      url : "/board/update",
+      method : "put",
+      contentType :"application/json",
+      data : JSON.stringify(boardDto),
+      success : function (response){
+        alert("변경성공");
+        window.location.href="/board";
+      },error : function (xhr){
+        if(xhr.status === 500){
+          alert("변경중 오류 발생");
+        }
+      }
+
+
+    })
+    alert("보드 업데이트 실행");
+  }
+</script>
+<body>
+
+  <div class="container mt-5" th:object="${board}">
+    <input type="hidden" id="input_id" th:value="*{id}"/>
+    <div class="block table-responsive grid-view">
+        <table class="table table-bordered">
+          <caption class="hidden">자유게시판 입력폼으로 작성자, 제목, 내용으로 구성되어 있습니다.</caption>
+          <tbody>
+          <tr>
+            <th><label th:for="writer">작성자</label></th>
+            <td>
+              <input class="form-control" id="writer_input" type="text"  th:value="*{writer}" readonly ></td>
+          </tr>
+          <tr>
+            <th><label th:for="title">제목</label></th>
+            <td colspan="3"><input class="form-control" id="title_input" type="text" th:value="*{title}"></td>
+          </tr>
+          <tr>
+            <th><label th:for="password">비밀번호</label></th>
+            <td colspan="3"><input class="form-control"  th:value="*{password}" readonly type="password" ></td>
+          </tr>
+          <tr>
+            <th><label th:for="content">내용</label></th>
+            <td colspan="3">
+<!--              <textarea class="form-control" th:value="*{content}"  id="content_input"rows="5" cols="80" style="height: 235px; width: 614px;"></textarea>-->
+              <textarea class="form-control" id="content_input" rows="5" cols="80" style="height: 235px; width: 614px;" th:text="*{content}"></textarea>
+
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      <button type="button" onclick="updateBoard()">수정하기</button>
+    </div>
+  </div>
+
+</body>
+</html>
