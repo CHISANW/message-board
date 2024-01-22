@@ -1,5 +1,6 @@
 package messageboard.Dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import messageboard.entity.Board;
 import messageboard.entity.Comment;
@@ -22,8 +23,8 @@ public class BoardDto {
     private String title;
 
     private LocalDateTime dateTime;
-    
-    @NotBlank(message = "작성자를 입력하세요.")
+
+
     private String writer;
     
     @NotBlank(message = "비밀번호를 입력하세요.")
@@ -31,6 +32,9 @@ public class BoardDto {
     
     @NotBlank(message = "내용을 입력하세요.")
     private String content;
+
+    private MemberDto memberDto;
+
 
 
 }

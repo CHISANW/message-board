@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.CommentDto;
 import messageboard.entity.Board;
 import messageboard.entity.Comment;
+import messageboard.entity.Member;
 import messageboard.repository.CommentRepository;
 import messageboard.service.CommentService;
+import messageboard.service.MemberService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -28,17 +30,21 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
     private final BoardServiceImpl boardService;
+    private final MemberService memberService;
 
     @Override
     public Comment save(CommentDto commentDto) {
 
         Long id = commentDto.getBoardDto().getId();
+        String username = commentDto.getMemberDto().getUsername();
+        Member byUsername = memberService.findByUsername(username);
 
         Board byBoardId = boardService.findByBoardId(id);
 
         Comment build = Comment.builder()
                 .content(commentDto.getComment())
                 .dateTime(LocalDateTime.now())
+                .member(byUsername)
                 .board(byBoardId).build();
 
 

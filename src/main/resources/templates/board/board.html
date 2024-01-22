@@ -5,16 +5,55 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script th:inline="javascript">
 
+        var loginverfiy = false;
+
+        $(document).ready(function () {
+            var login = document.getElementById('loginMember_username').value;
+            if (login !==null){
+                loginverfiy = true;
+            }
+        })
 
         function writing(){
-            alert("글쓰기 버튼 동작");
-            window.location.href="/boardWrit";
+
+            if(loginverfiy ===true){
+                window.location.href="/boardWrit";
+            }
+           if (loginverfiy===false){
+               alert("로그인 먼저 해주세요");
+           }
         }
 
     </script>
 
 <body>
-
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#" th:href="@{/}">CRUD 게시판</a>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav">
+                <div th:if="${loginMember != null}" class="d-flex justify-content-between">
+                    <div class="nav-item">
+                        <a class="nav-link active" aria-current="page" th:text="'사용자: '+${loginMember.username}">Home</a>
+                    </div>
+                    <div class="nav-item">
+                        <form th:action="@{/logout}" method="post">
+                            <button type="submit" class="btn btn-link">로그아웃</button>
+                        </form>
+                    </div>
+                </div>
+                <div th:if="${loginMember==null}"  class="d-flex justify-content-between">
+                    <li class="nav-item" >
+                        <a class="nav-link active" aria-current="page" th:href="@{/login}">로그인</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/createMember}">회원가입</a>
+                    </li>
+                </div>
+            </ul>
+        </div>
+    </div>
+</nav>
 
 <div> 총 상품수 :
     <span th:text="${page.totalElements}">19</span>
@@ -81,6 +120,9 @@
     </ul>
 </nav>
 
+<div th:if="${loginMember!=null}">
+    <input type="hidden" id="loginMember_username" th:value="${loginMember.username}">
+</div>
 
 </body>
 </html>

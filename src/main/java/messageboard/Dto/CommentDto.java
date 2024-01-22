@@ -21,4 +21,7 @@ public class CommentDto {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private BoardDto boardDto;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private MemberDto memberDto;
 }

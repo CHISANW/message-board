@@ -29,4 +29,10 @@ public class Comment {
     @JoinColumn(name = "board_Id")
     private Board board;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_Id")
+    private Member member;
+
+
+
 }

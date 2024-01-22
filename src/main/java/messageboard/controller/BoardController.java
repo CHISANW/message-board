@@ -6,11 +6,11 @@ import messageboard.Dto.BoardDto;
 import messageboard.Dto.CommentDto;
 import messageboard.entity.Board;
 import messageboard.entity.Comment;
+import messageboard.entity.Member;
 import messageboard.event.ViewsEvent;
-import messageboard.service.BoardService;
-import messageboard.service.CommentService;
 import messageboard.service.Impl.BoardServiceImpl;
 import messageboard.service.Impl.CommentServiceImpl;
+import messageboard.service.Impl.MemberServiceImpl;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,8 +24,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,12 +38,14 @@ public class BoardController {
     private final BoardServiceImpl boardService;
     private final CommentServiceImpl commentService;
     private final ApplicationEventPublisher eventPublisher;
+    private final MemberServiceImpl memberService;
 
     @GetMapping("/board")
-    public String board(Model model, @PageableDefault(size = 4) Pageable pageable,@RequestParam(required = false, defaultValue = "") String title){
+    public String board(Model model, @PageableDefault(size = 4) Pageable pageable,@RequestParam(required = false, defaultValue = "") String title,HttpSession session){
         Page<Board> boards = boardService.search(title, pageable);
         List<Board> boardAll = boards.getContent();
 
+        getSession(model,session);
 
         int currentPage = boards.getPageable().getPageNumber() + 1; // 현재 페이지 (0부터 시작하는 인덱스를 1로 변환)
         int totalPages = boards.getTotalPages(); // 전체 페이지 수
@@ -65,11 +67,15 @@ public class BoardController {
     }
 
     @GetMapping("/boardWrit")
-    public String write(Model model){
+    public String write(Model model, HttpSession session){
 
+        getSession(model, session);
         model.addAttribute("board",new BoardDto());
         return "board/wirteboard";
     }
+
+
+
     @PostMapping("/boardWrit")
     @ResponseBody
     public ResponseEntity<?> writing(@Valid @RequestBody BoardDto boardDto, BindingResult result){
@@ -81,8 +87,7 @@ public class BoardController {
                 }
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
             }
-            Board save = boardService.save(boardDto);
-            log.info("save={}",save);
+            boardService.save(boardDto);
 
             return ResponseEntity.ok("성공");
 
@@ -93,12 +98,13 @@ public class BoardController {
     }
 
     @GetMapping("/board/{boardId}")
-    public String boardInfo(@PathVariable(name = "boardId") Long boardId,Model model){
+    public String boardInfo(@PathVariable(name = "boardId") Long boardId,Model model,HttpSession session){
         Board byBoardId = boardService.findByBoardId(boardId);
-        eventPublisher.publishEvent(new ViewsEvent(byBoardId));
+        eventPublisher.publishEvent(new ViewsEvent(byBoardId));     //조회시 카운터 증가
 
-        List<Comment> allComment = commentService.findAllComment(boardId);
+        List<Comment> allComment = commentService.findAllComment(boardId);      //조회수 값조회
 
+        getSession(model,session);
         model.addAttribute("allComment",allComment);
         model.addAttribute("comment",new CommentDto());
         model.addAttribute("board",byBoardId);
@@ -110,7 +116,11 @@ public class BoardController {
     public ResponseEntity<?> boardDelete(@RequestBody BoardDto boardDto){
         try{
             Long id = boardDto.getId();
-            boardService.deleteBoard(id);
+            String memberUsername = boardDto.getMemberDto().getUsername();
+            boolean deleteBoard = boardService.deleteBoard(id, memberUsername);
+            if (!deleteBoard){
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("등록된 사용자만 삭제가능");
+            }
             return ResponseEntity.ok("삭제성공");
         }catch (EntityNotFoundException e){
             e.printStackTrace();
@@ -138,17 +148,7 @@ public class BoardController {
         }
     }
 
-    @PostMapping("/board/comment")
-    @ResponseBody
-    public ResponseEntity<?> comment(@RequestBody CommentDto commentDto){
-        try{
-            Comment saveComment = commentService.save(commentDto);
-            return ResponseEntity.ok(saveComment);
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("댓글 작성 오류 발생");
-        }
-    }
+
 
     @PostMapping("/password/verify")
     @ResponseBody
@@ -156,12 +156,21 @@ public class BoardController {
         try {
             log.info("dto={}",boardDto);
             String password = boardDto.getPassword();
+
+            String dtoUsername = boardDto.getMemberDto().getUsername();
+
             Long boardId = boardDto.getId();
-            boolean verify = boardService.passwordVerify(boardId,password);
-            if (verify == false){
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("비밀번호가 일치하지 않습니다.");
+            Integer integer = boardService.passwordVerify(boardId, password, dtoUsername);
+            log.info("integer={}",integer);
+
+            if (integer==2){
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("등록한 사용자만 수정할수 있습니다.");
+            } else if (integer==1){
+                return ResponseEntity.ok(integer);
             }
-            return ResponseEntity.ok(verify);
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("비밀번호가 일치하지 않습니다.");
+
         }catch (Exception e){
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류발생");
@@ -169,5 +178,9 @@ public class BoardController {
 
     }
 
+    private static void getSession(Model model, HttpSession session) {      //로그인한 사용자 가져오기
+        Member loginMember = (Member) session.getAttribute("loginMember");
+        model.addAttribute("loginMember",loginMember);
+    }
 
 }

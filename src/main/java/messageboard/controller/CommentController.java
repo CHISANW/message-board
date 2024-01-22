@@ -32,6 +32,18 @@ public class CommentController {
         }
     }
 
+    @PostMapping("/board/comment")
+    @ResponseBody
+    public ResponseEntity<?> comment(@RequestBody CommentDto commentDto){
+        try{
+            Comment saveComment = commentService.save(commentDto);
+            return ResponseEntity.ok(saveComment);
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("댓글 작성 오류 발생");
+        }
+    }
+
 //    @GetMapping("/countComment")
 //    public ResponseEntity<?> countComment(@RequestParam Long id) {
 //        try {

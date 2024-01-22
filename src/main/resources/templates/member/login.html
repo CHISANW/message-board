@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+<style>
+  .login {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .login-heading {
+    font-weight: 300;
+  }
+
+  body {
+    font-family: 'DungGeunMo-Regular';
+  }
+</style>
+<script th:inline="javascript">
+
+</script>
+<body>
+
+
+<div class="container-fluid ps-md-0">
+  <div class="login">
+    <div class="container align-content-center"> <!-- 이 부분에 text-center 클래스를 추가하여 로그인 폼을 가운데로 정렬합니다. -->
+      <div th:if="${error}" class="alert alert-danger" role="alert">
+        <p th:text="${error}" style="text-align: center"></p>
+      </div>
+      <div class="col-md-9 col-lg-8 mx-auto">
+        <a href="/" style="text-decoration: none; color: #0D0D0D;">
+          <h1 class="text-center">로그인</h1>
+        </a>
+      <form  th:action="@{/login}" method="post" th:object="${login}">
+        <div class="form-floating mb-3 text-center">
+          <input type="text" th:field="*{username}"  placeholder="Username"/>
+        </div>
+        <div class="form-floating mb-3 text-center">
+          <input type="password"  th:field="*{password}" placeholder="Password"/>
+        </div>
+        <div class="text-center">
+          <button  class="btn btn-primary" type="submit" >로그인</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+</div>
+</body>
+</html>

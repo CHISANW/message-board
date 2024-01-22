@@ -1,10 +1,7 @@
 package messageboard.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -38,8 +35,17 @@ public class Board {
     @OneToMany(mappedBy = "board",cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Comment> comments = new ArrayList<>();
+
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_Id")
+    private Member member;
+
+
     public void update(String title, String content){
         this.title=title;
         this.content = content;
     }
+
 }

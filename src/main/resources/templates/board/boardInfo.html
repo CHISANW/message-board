@@ -6,96 +6,120 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script th:inline="javascript">
+  var loginverfiy = false;
 
-  var deleteValue = false;
+
+  $(document).ready(function () {
+    var login = document.getElementById('loginMember_username').value;
+    if (login !==null){
+      loginverfiy = true;
+    }
+  })
   function opList(){
     window.location.href="/board";
   }
 
   function boardDelete(){
-    var BoardConfirm = confirm("정말로 삭제 하시겠습니까?");
+    if (loginverfiy===true){
+      var BoardConfirm = confirm("정말로 삭제 하시겠습니까?");
 
-    if (BoardConfirm){
-      var id = document.getElementById('input_id').value;
+      if (BoardConfirm){
+        var id = document.getElementById('input_id').value;
+        var login = document.getElementById('loginMember_username').value;
 
-      var dto = {
-        "id": id
-      }
-      $.ajax({
-        url:"/delete",
-        method : "delete",
-        contentType : "application/json",
-        data : JSON.stringify(dto),
-        success : function (response){
-          alert("삭제성공");
-          window.location.href="/board";
-        },
-        error : function (xhr){
-          if (xhr.status === 500){
-            alert("삭제도중 오류발생");
+        var dto = {
+          "id": id,
+          "memberDto" :{
+            "username" : login
           }
         }
-      });
-    }
+        $.ajax({
+          url:"/delete",
+          method : "delete",
+          contentType : "application/json",
+          data : JSON.stringify(dto),
+          success : function (response){
+            alert("삭제성공");
+            window.location.href="/board";
+          },
+          error : function (xhr){
+            if (xhr.status === 500){
+              alert("삭제도중 오류발생");
+            }
+            if (xhr.status===401){
+              alert("등록된 사용자만 삭제가능");
+            }
+          }
+        });
+      }
+    }else
+      alert("권한이 없습니다.");
+
 
   }
 
+  //댓글 버튼
   function boardComment(){
-    alert("댓글달기 버튼 동작");
-    var id = document.getElementById('input_id').value;
-    var comment = document.getElementById('comment_text').value;
+    if (loginverfiy===true) {
+      alert("댓글달기 버튼 동작");
+      var id = document.getElementById('input_id').value;
+      var comment = document.getElementById('comment_text').value;
+      var login = document.getElementById('loginMember_username').value;
 
-    var dto = {
-      "comment" : comment,
-      "boardDto" : {
-        "id" : id
-      }
-    };
-
-    $.ajax({
-      url: "/board/comment",
-      method: "post",
-      contentType: "application/json",
-      data: JSON.stringify(dto),
-      success : function (response){
-        alert("성공");
-        location.reload();
-      },
-      error : function (xhr){
-        if (xhr===500){
-          alert("오류발생");
+      var dto = {
+        "comment": comment,
+        "boardDto": {
+          "id": id
+        },
+        "memberDto": {
+          "username": login
         }
-      }
-    })
+      };
+
+      $.ajax({
+        url: "/board/comment",
+        method: "post",
+        contentType: "application/json",
+        data: JSON.stringify(dto),
+        success: function (response) {
+          alert("성공");
+          location.reload();
+        },
+        error: function (xhr) {
+          if (xhr === 500) {
+            alert("오류발생");
+          }
+        }
+      });
+    }else
+      alert("로그인후 댓글을 작성할수 있습니다.");
   }
 
   function deleteComment(){
     const comment_id = document.getElementById('comment_id').value;
+
     var commentConfirm = confirm("삭제하시겠습니까?");
-
-    if (commentConfirm){
-      var dto={
-        "id" : comment_id
-      }
-      $.ajax({
-        url : "/delete/comment",
-        method : "delete",
-        contentType : "application/json",
-        data : JSON.stringify(dto),
-
-        success : function (res){
-          alert("삭제성성공");
-          location.reload();
-        },
-        error : function (xhr){
-          if (xhr===500){
-            alert("삭제도중 오류발생");
-          }
+      if (commentConfirm) {
+        var dto = {
+          "id": comment_id
         }
-      });
-    }
+        $.ajax({
+          url: "/delete/comment",
+          method: "delete",
+          contentType: "application/json",
+          data: JSON.stringify(dto),
 
-
+          success: function (res) {
+            alert("삭제성성공");
+            location.reload();
+          },
+          error: function (xhr) {
+            if (xhr === 500) {
+              alert("삭제도중 오류발생");
+            }
+          }
+        });
+      }
   }
 
   function openModal() {
@@ -108,71 +132,87 @@
 
   function updateBoardPage() {
     // 비밀번호 입력 모달 창 열기
-    openModal();
+    if(loginverfiy===true) {
+      openModal();
+    }if(loginverfiy===false) {
+      alert("권한이 없습니다.");
+    }
   }
 
   function verifyPassword() {
     var passwordInput = document.getElementById('password').value;
     var id = document.getElementById('input_id').value;
+    const loginMember= document.getElementById('loginMember_username').value;
 
     var dto ={
       "id" : id,
-      "password" : passwordInput
+      "password" : passwordInput,
+      "memberDto" :{
+        "username" : loginMember
+      }
     }
 
-    $.ajax({
-      url : "/password/verify",
-      method : "post",
-      contentType : "application/json",
-      data : JSON.stringify(dto),
-      success : function (response){
-        if (response === true){
-          alert("비밀번호 검증 성공");
-          window.location.href = "/board/update/" + id;
+      $.ajax({
+        url : "/password/verify",
+        method : "post",
+        contentType : "application/json",
+        data : JSON.stringify(dto),
+        success : function (response){
+          if (response === 1){
+            alert("비밀번호 검증 성공");
+            window.location.href = "/board/update/" + id;
+          }
+        },
+        error : function (xhr){
+          if (xhr.status===500){
+            alert("오류 발생");
+          }
+          if (xhr.status===400){
+            alert("비밀번호가 일치하지 않습니다.");
+          }
+          if (xhr.status===401){
+            alert("등록한 사용자만 수정할수 있습니다.");
+          }
         }
-      },
-      error : function (xhr){
-        if (xhr.status===500){
-          alert("오류 발생");
-        }
-        if (xhr.status===400){
-          alert("비밀번호가 일치하지 않습니다.");
-        }
-      }
-    });
-    // if (passwordInput === passwordStored) {
-    //   var boardId = document.getElementById('input_id').value;
-    //   // 비밀번호와 함께 URL 이동
-    //
-    // } else {
-    //   alert("비밀번호가 틀렸습니다.");
-    // }
-
-    // 모달 창 닫기
-    // closeModal();
+      });
+      // closeModal();
   }
-  // function updateBoardPage(){
-  //   var password_input = document.getElementById('input_password').value;
-  //   var password = prompt("비밀번호를 입력하세요 :");
-  //
-  //   if (password === password_input) {
-  //     var boardId = document.getElementById('input_id').value;
-  //     // 비밀번호와 함께 URL 이동
-  //     window.location.href = "/board/update/" + boardId;
-  //   }
-  //   if (password !== password_input){
-  //     alert("비밀번호가 틀렸습니다.")
-  //   }
-  // }
 
 </script>
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#" th:href="@{/}">CRUD 게시판</a>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav">
+        <div th:if="${loginMember != null}" class="d-flex justify-content-between">
+          <div class="nav-item">
+            <a class="nav-link active" aria-current="page" th:text="'사용자: '+${loginMember.username}">Home</a>
+          </div>
+          <div class="nav-item">
+            <form th:action="@{/logout}" method="post">
+              <button type="submit" class="btn btn-link">로그아웃</button>
+            </form>
+          </div>
+        </div>
+        <div th:if="${loginMember==null}"  class="d-flex justify-content-between">
+          <li class="nav-item" >
+            <a class="nav-link active" aria-current="page" th:href="@{/login}">로그인</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" th:href="@{/createMember}">회원가입</a>
+          </li>
+        </div>
+      </ul>
+    </div>
+  </div>
+</nav>
 
 <div th:object="${board}">
 
   <div class="container mt-4">
     <div class="block table-responsive grid-view">
       <table class="table table-bordered">
-        <caption class="hidden">HOME &gt; 소통/공감 &gt; 소통게시판 &gt; 자유게시판 메뉴의 게시물 정보이며 제목, 내용, 조회수, 등록자명, 등록일, 항목을 제공합니다.</caption>
+        <hr class="my-4"/>
         <colgroup>
           <col style="width:15%;">
           <col>
@@ -224,6 +264,7 @@
         <tr>
           <td>
             <input type="hidden" th:value="${comment.id}" id="comment_id">
+            <div th:text="${comment.member.username}" style="font-weight: bold;color: #0D0D0D"></div>
             <div th:text="${comment.content}"/>
             <div th:text="${#temporals.format(comment.dateTime, 'yyyy-MM-dd HH:mm:ss')}" style="font-size: 10px"/>
             <button onclick="deleteComment()" style="font-size: 8px">
@@ -235,6 +276,8 @@
         </tr>
         </tbody>
       </table>
+
+      <hr class="my-4"/>
 
       <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
         <textarea type="text" th:field="${comment.comment}"  id="comment_text" rows="5" cols="80" style="height: 235px; width: 614px;"></textarea>
@@ -255,6 +298,8 @@
 
 
   <input type="hidden" id="input_id" th:value="*{id}">
+
+  <input  th:if="${loginMember != null}" type="hidden" id="loginMember_username" th:value="${loginMember.username}">
 
 
 

@@ -7,15 +7,17 @@
 
   function writeboard(){
     const title = document.getElementById('title_input').value;
-    const writer = document.getElementById('writer_input').value;
+    const loginMember_username = document.getElementById('writer_input').value;
     const password = document.getElementById('password_input').value;
     const content = document.getElementById('content_input').value;
 
     var boardDto={
       "title" :title,
-      "writer" : writer,
       "password" : password,
-      "content": content
+      "content": content,
+      "memberDto" :{
+        "username" :loginMember_username
+      }
     }
 
     $.ajax({
@@ -52,7 +54,7 @@
           <tr>
             <th><label th:for="writer">작성자</label></th>
             <td>
-              <input class="form-control" id="writer_input" type="text" th:field="*{writer}"></td>
+              <input class="form-control" id="writer_input" type="text" th:value="${loginMember.username}" readonly></td>
           </tr>
           <tr>
             <th><label th:for="title">제목</label></th>

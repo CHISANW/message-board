@@ -16,7 +16,7 @@ public interface BoardService {
 
     Page<Board> findPageAll(Pageable pageable);
 
-    void deleteBoard(Long boardId);
+    boolean deleteBoard(Long boardId,String memberUsername);
 
     Board updateBoard(BoardDto boardDto);
 
