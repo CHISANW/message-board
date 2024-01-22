@@ -32,6 +32,8 @@ public class BoardServiceImpl implements BoardService {
                 .writer(boardDto.getWriter())
                 .password(boardDto.getPassword())
                 .content(boardDto.getContent())
+                .count(0)
+                .views(0)
                 .build();
 
         Board save = boardRepository.save(build);
@@ -74,5 +76,31 @@ public class BoardServiceImpl implements BoardService {
 
     }
 
+    @Override
+    public Page<Board> search(String title,Pageable pageable) {
+        return boardRepository.findByTitleContaining(title,pageable);
+    }
+
+    //조회수 기능
+    public Board countViews(Long boardId){
+        Board byBoardId = findByBoardId(boardId);
+        Integer views = byBoardId.getViews();
+        byBoardId.setViews(++views);
+        return boardRepository.save(byBoardId);
+    }
+
+    public Board entitySave(Board board){
+        return boardRepository.save(board);
+    }
+
+    public boolean passwordVerify(Long boardId,String password){
+        Board byBoardId = findByBoardId(boardId);
+        String boardPassword = byBoardId.getPassword();
+
+        if (password.equals(boardPassword)){
+            return true;
+        }
+        return false;
+    }
 
 }

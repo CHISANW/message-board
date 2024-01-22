@@ -1,11 +1,10 @@
 package messageboard.Dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import messageboard.entity.Board;
+import messageboard.entity.Comment;
 
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoardDto {
+
 
     private Long id;
 
@@ -32,15 +32,5 @@ public class BoardDto {
     @NotBlank(message = "내용을 입력하세요.")
     private String content;
 
-
-    public BoardDto ofDto(Board board){
-        BoardDto build = BoardDto.builder()
-                .title(board.getTitle())
-                .content(board.getContent())
-                .writer(board.getWriter())
-                .password(board.getPassword())
-                .dateTime(board.getDateTime()).build();
-        return build;
-    }
 
 }

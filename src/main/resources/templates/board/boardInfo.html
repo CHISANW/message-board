@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/header :: header"></head>
+
 <body>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -13,9 +14,10 @@
 
   function boardDelete(){
     var BoardConfirm = confirm("정말로 삭제 하시겠습니까?");
-    const id = document.getElementById('input_id').value;
 
     if (BoardConfirm){
+      var id = document.getElementById('input_id').value;
+
       var dto = {
         "id": id
       }
@@ -37,11 +39,131 @@
     }
 
   }
-  function updateBoardPage(){
-    var boardId = document.getElementById('input_id').value;
-    console.log(boardId);
-    window.location.href="/board/update/"+boardId;
+
+  function boardComment(){
+    alert("댓글달기 버튼 동작");
+    var id = document.getElementById('input_id').value;
+    var comment = document.getElementById('comment_text').value;
+
+    var dto = {
+      "comment" : comment,
+      "boardDto" : {
+        "id" : id
+      }
+    };
+
+    $.ajax({
+      url: "/board/comment",
+      method: "post",
+      contentType: "application/json",
+      data: JSON.stringify(dto),
+      success : function (response){
+        alert("성공");
+        location.reload();
+      },
+      error : function (xhr){
+        if (xhr===500){
+          alert("오류발생");
+        }
+      }
+    })
   }
+
+  function deleteComment(){
+    const comment_id = document.getElementById('comment_id').value;
+    var commentConfirm = confirm("삭제하시겠습니까?");
+
+    if (commentConfirm){
+      var dto={
+        "id" : comment_id
+      }
+      $.ajax({
+        url : "/delete/comment",
+        method : "delete",
+        contentType : "application/json",
+        data : JSON.stringify(dto),
+
+        success : function (res){
+          alert("삭제성성공");
+          location.reload();
+        },
+        error : function (xhr){
+          if (xhr===500){
+            alert("삭제도중 오류발생");
+          }
+        }
+      });
+    }
+
+
+  }
+
+  function openModal() {
+    document.getElementById('passwordModal').style.display = 'block';
+  }
+
+  function closeModal() {
+    document.getElementById('passwordModal').style.display = 'none';
+  }
+
+  function updateBoardPage() {
+    // 비밀번호 입력 모달 창 열기
+    openModal();
+  }
+
+  function verifyPassword() {
+    var passwordInput = document.getElementById('password').value;
+    var id = document.getElementById('input_id').value;
+
+    var dto ={
+      "id" : id,
+      "password" : passwordInput
+    }
+
+    $.ajax({
+      url : "/password/verify",
+      method : "post",
+      contentType : "application/json",
+      data : JSON.stringify(dto),
+      success : function (response){
+        if (response === true){
+          alert("비밀번호 검증 성공");
+          window.location.href = "/board/update/" + id;
+        }
+      },
+      error : function (xhr){
+        if (xhr.status===500){
+          alert("오류 발생");
+        }
+        if (xhr.status===400){
+          alert("비밀번호가 일치하지 않습니다.");
+        }
+      }
+    });
+    // if (passwordInput === passwordStored) {
+    //   var boardId = document.getElementById('input_id').value;
+    //   // 비밀번호와 함께 URL 이동
+    //
+    // } else {
+    //   alert("비밀번호가 틀렸습니다.");
+    // }
+
+    // 모달 창 닫기
+    // closeModal();
+  }
+  // function updateBoardPage(){
+  //   var password_input = document.getElementById('input_password').value;
+  //   var password = prompt("비밀번호를 입력하세요 :");
+  //
+  //   if (password === password_input) {
+  //     var boardId = document.getElementById('input_id').value;
+  //     // 비밀번호와 함께 URL 이동
+  //     window.location.href = "/board/update/" + boardId;
+  //   }
+  //   if (password !== password_input){
+  //     alert("비밀번호가 틀렸습니다.")
+  //   }
+  // }
 
 </script>
 
@@ -61,7 +183,11 @@
         <tr>
           <th colspan="4">
             <div class="col-md-12">
-              <span th:text="*{title}"></span>
+              <span id="text_title" th:text="*{title}"></span>
+              <button  type="button" class="btn" onclick="updateBoardPage()">수정</button>
+              <button type="button" onclick="boardDelete()" class="btn btn-danger">삭제</button>
+              <button type="button" class="btn btn-info" onclick="opList();">목록</button>
+
             </div>
           </th>
         </tr>
@@ -75,7 +201,7 @@
         </tr>
         <tr>
           <th>조회수</th>
-          <td colspan="3">5</td>
+          <td colspan="3" th:text="*{views}">5</td>
         </tr>
         <tr>
           <td colspan="4">
@@ -85,14 +211,52 @@
         </tr>
         </tbody>
       </table>
+
+
+      <!-- 댓글 목록 표시 -->
+      <table class="table">
+        <thead>
+        <tr>
+          <th>댓글창</th>
+        </tr>
+        </thead>
+        <tbody th:each="comment : ${allComment}">
+        <tr>
+          <td>
+            <input type="hidden" th:value="${comment.id}" id="comment_id">
+            <div th:text="${comment.content}"/>
+            <div th:text="${#temporals.format(comment.dateTime, 'yyyy-MM-dd HH:mm:ss')}" style="font-size: 10px"/>
+            <button onclick="deleteComment()" style="font-size: 8px">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+              </svg></button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+        <textarea type="text" th:field="${comment.comment}"  id="comment_text" rows="5" cols="80" style="height: 235px; width: 614px;"></textarea>
+        <br>
+        <button onclick="boardComment()">댓글달기</button>
+      </div>
     </div>
   </div>
-  <input type="hidden" id="input_id" th:value="*{id}">
-  <div class="pull-right">
-    <button  type="button" class="btn" onclick="updateBoardPage()">수정</button>
-    <button type="button" onclick="boardDelete()" class="btn btn-danger">삭제</button>
-    <button type="button" class="btn btn-info" onclick="opList();">목록</button>
+
+  <div id="passwordModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <label for="password">비밀번호를 입력하세요:</label>
+      <input type="password" id="password">
+      <button onclick="verifyPassword()">확인</button>
+    </div>
   </div>
+
+
+  <input type="hidden" id="input_id" th:value="*{id}">
+
+
 
 </div>
 </body>

@@ -1,5 +1,6 @@
 package messageboard.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,7 +32,12 @@ public class Board {
 
     private Integer views;
 
+    private Integer count;
 
+
+    @OneToMany(mappedBy = "board",cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Comment> comments = new ArrayList<>();
     public void update(String title, String content){
         this.title=title;
         this.content = content;

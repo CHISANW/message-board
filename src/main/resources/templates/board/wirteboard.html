@@ -35,8 +35,11 @@
           console.log(ErrorMAp);
         }
       }
-    })
+    });
 
+  }
+  function cancle(){
+    window.location.href="/board";
   }
 </script>
 <body>
@@ -62,12 +65,13 @@
           <tr>
             <th><label th:for="content">내용</label></th>
             <td colspan="3">
-              <textarea class="form-control" th:field="*{content}"  id="content_input"rows="5" cols="80" style="height: 235px; width: 614px;"></textarea>
+              <textarea class="form-control" th:field="*{content}"  id="content_input" rows="5" cols="80" style="height: 235px; width: 614px;"></textarea>
             </td>
           </tr>
           </tbody>
         </table>
       <button onclick="writeboard()">글쓰기</button>
+      <button onclick="cancle()">취소</button>
     </div>
   </div>
 

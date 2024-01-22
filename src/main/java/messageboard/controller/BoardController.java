@@ -3,8 +3,15 @@ package messageboard.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.BoardDto;
+import messageboard.Dto.CommentDto;
 import messageboard.entity.Board;
+import messageboard.entity.Comment;
+import messageboard.event.ViewsEvent;
 import messageboard.service.BoardService;
+import messageboard.service.CommentService;
+import messageboard.service.Impl.BoardServiceImpl;
+import messageboard.service.Impl.CommentServiceImpl;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -18,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,15 +35,18 @@ import java.util.Map;
 @Slf4j
 public class BoardController {
 
-    private final BoardService boardService;
+    private final BoardServiceImpl boardService;
+    private final CommentServiceImpl commentService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @GetMapping("/board")
-    public String board(Model model, @PageableDefault(size = 4) Pageable pageable){
-        Page<Board> pageAll = boardService.findPageAll(pageable);
-        List<Board> boardAll = pageAll.getContent();
+    public String board(Model model, @PageableDefault(size = 4) Pageable pageable,@RequestParam(required = false, defaultValue = "") String title){
+        Page<Board> boards = boardService.search(title, pageable);
+        List<Board> boardAll = boards.getContent();
 
-        int currentPage = pageAll.getPageable().getPageNumber() + 1; // 현재 페이지 (0부터 시작하는 인덱스를 1로 변환)
-        int totalPages = pageAll.getTotalPages(); // 전체 페이지 수
+
+        int currentPage = boards.getPageable().getPageNumber() + 1; // 현재 페이지 (0부터 시작하는 인덱스를 1로 변환)
+        int totalPages = boards.getTotalPages(); // 전체 페이지 수
 
         int visiblePages = 3;
 
@@ -49,7 +60,7 @@ public class BoardController {
         model.addAttribute("startPage",startPage);
         model.addAttribute("endPage",endPage);
 
-        model.addAttribute("page",pageAll);
+        model.addAttribute("page",boards);
         return "board/board";
     }
 
@@ -84,6 +95,12 @@ public class BoardController {
     @GetMapping("/board/{boardId}")
     public String boardInfo(@PathVariable(name = "boardId") Long boardId,Model model){
         Board byBoardId = boardService.findByBoardId(boardId);
+        eventPublisher.publishEvent(new ViewsEvent(byBoardId));
+
+        List<Comment> allComment = commentService.findAllComment(boardId);
+
+        model.addAttribute("allComment",allComment);
+        model.addAttribute("comment",new CommentDto());
         model.addAttribute("board",byBoardId);
         return "board/boardInfo";
     }
@@ -120,5 +137,37 @@ public class BoardController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류 발생");
         }
     }
+
+    @PostMapping("/board/comment")
+    @ResponseBody
+    public ResponseEntity<?> comment(@RequestBody CommentDto commentDto){
+        try{
+            Comment saveComment = commentService.save(commentDto);
+            return ResponseEntity.ok(saveComment);
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("댓글 작성 오류 발생");
+        }
+    }
+
+    @PostMapping("/password/verify")
+    @ResponseBody
+    public ResponseEntity<?> verifyPassword(@RequestBody BoardDto boardDto){
+        try {
+            log.info("dto={}",boardDto);
+            String password = boardDto.getPassword();
+            Long boardId = boardDto.getId();
+            boolean verify = boardService.passwordVerify(boardId,password);
+            if (verify == false){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("비밀번호가 일치하지 않습니다.");
+            }
+            return ResponseEntity.ok(verify);
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류발생");
+        }
+
+    }
+
 
 }

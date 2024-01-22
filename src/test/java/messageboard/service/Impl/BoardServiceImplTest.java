@@ -20,13 +20,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class BoardServiceImplTest {
 
     @Autowired
-    BoardService boardService;
+    BoardServiceImpl boardService;
     
     @Test
     @Rollback(value = false)
     void test(){
         BoardDto boardDto = new BoardDto();
         boardDto.setContent("12312");
+        boardDto.setPassword("111");
         boardDto.setTitle("제목");
         boardDto.setWriter("민우");
 
@@ -34,7 +35,11 @@ class BoardServiceImplTest {
         log.info("id={}",save.getId());
         assertThat(save).isInstanceOf(Board.class);
 
-        boardService.deleteBoard(1l);
+        boolean b = boardService.passwordVerify(save.getId(), "22");
+        assertThat(b).isFalse();
+
+        boolean a = boardService.passwordVerify(save.getId(), "111");
+        assertThat(a).isTrue();
 
 
 

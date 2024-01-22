@@ -19,4 +19,6 @@ public interface BoardService {
     void deleteBoard(Long boardId);
 
     Board updateBoard(BoardDto boardDto);
+
+    Page<Board> search(String title,Pageable pageable);
 }

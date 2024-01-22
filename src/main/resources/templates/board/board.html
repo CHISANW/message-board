@@ -4,10 +4,13 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script th:inline="javascript">
+
+
         function writing(){
             alert("글쓰기 버튼 동작");
             window.location.href="/boardWrit";
         }
+
     </script>
 
 <body>
@@ -16,16 +19,18 @@
 <div> 총 상품수 :
     <span th:text="${page.totalElements}">19</span>
 </div>
-<div class="col-6 d-flex justify-center">
+<form method="get" th:action="@{/board}">
+    <div class="col-6 d-flex justify-center">
+        <label for="title" class="visually-hidden">검색</label>
+        <input type="text" class="form-control flex-grow-1 me-2" id="title" name="title">
+        <button type="submit" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                <path d="M11.742 9.672a6.5 6.5 0 1 0-1.07 1.07l3.53 3.53a.75.75 0 0 0 1.06-1.06l-3.52-3.54zM10.5 6A4.5 4.5 0 1 1 6 1.5 4.5 4.5 0 0 1 10.5 6z"/>
+            </svg>
+        </button>
+    </div>
+</form>
 
-    <label for="searchText" class="visually-hidden">검색</label>
-    <input type="text" class="form-control flex-grow-1 me-2" id="searchText" name="searchText">
-    <button type="submit" class="btn btn-primary">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-            <path d="M11.742 9.672a6.5 6.5 0 1 0-1.07 1.07l3.53 3.53a.75.75 0 0 0 1.06-1.06l-3.52-3.54zM10.5 6A4.5 4.5 0 1 1 6 1.5 4.5 4.5 0 0 1 10.5 6z"/>
-        </svg>
-    </button>
-</div>
 
 
 <table class="table">
@@ -38,15 +43,19 @@
         <th scope="col">조회수</th>
     </tr>
     </thead>
-    <tbody th:each="boards : ${boardAll}">
-    <tr>
+    <tbody th:each="boards: ${boardAll}">
+    <tr >
         <th scope="row">
+            <input type="hidden" th:value="${boards.id}" id="board_Id">
             <a th:href="@{/board/{boardId}(boardId=${boards.id})}" th:text="${boards.id}"/>
         </th>
-        <td th:text="${boards.title}">문서</td>
+        <td>
+            <span th:text="${boards.title}"></span>
+            <span th:if="${boards.count != 0}" th:text="'('+${boards.count}+')'">a</span>
+        </td>
         <td th:text="${boards.writer}">김민우</td>
         <td th:text="${#temporals.format(boards.dateTime, 'yyyy-MM-dd')}">오늘작성</td>
-        <td>1112</td>
+        <td th:text="${boards.views}">1112</td>
     </tr>
     </tbody>
 </table>
