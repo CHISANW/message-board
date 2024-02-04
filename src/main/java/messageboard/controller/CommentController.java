@@ -5,19 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.CommentDto;
 import messageboard.Exception.CommentException;
 import messageboard.entity.Comment;
-import messageboard.entity.Member;
-import messageboard.service.CommentService;
 import messageboard.service.Impl.CommentServiceImpl;
-import messageboard.service.Impl.MemberServiceImpl;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import javax.websocket.Session;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+
 
 @RestController
 @Slf4j
@@ -25,7 +20,6 @@ import java.util.Map;
 public class CommentController {
 
     private final CommentServiceImpl commentService;
-    private final MemberServiceImpl memberService;
 
     @DeleteMapping("/delete/comment")
     public ResponseEntity<?> deleteComment(@RequestBody CommentDto commentDto){
