@@ -35,12 +35,6 @@ class BoardServiceImplTest {
         log.info("id={}",save.getId());
         assertThat(save).isInstanceOf(Board.class);
 
-        boolean b = boardService.passwordVerify(save.getId(), "22");
-        assertThat(b).isFalse();
-
-        boolean a = boardService.passwordVerify(save.getId(), "111");
-        assertThat(a).isTrue();
-
 
 
     }

@@ -25,10 +25,12 @@ public class Member {
 
     @JsonIgnore
     @OneToMany(mappedBy = "member")
+    @Builder.Default
     private List<Board> boards = new ArrayList<>();
 
     @JsonIgnore
     @OneToMany(mappedBy = "member")
+    @Builder.Default
     private List<Comment> comments =new ArrayList<>();
 }
 

@@ -12,11 +12,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.net.http.HttpRequest;
+import javax.websocket.Session;
 
 @Controller
 @RequiredArgsConstructor
@@ -42,32 +43,35 @@ public class MemberController {
     }
 
     @GetMapping("/login")
-    public String getLogin(HttpServletRequest request, Model model){
+    public String getLogin(@RequestParam(defaultValue = "/") String redirectURL,HttpServletRequest request, Model model){
 
-        //현재 페이지를 가져와 세션에 저장
+        model.addAttribute("login", new LoginDto());
+
         String referer = request.getHeader("Referer");
-        request.getSession().setAttribute("prevPage", referer);
-        log.info("uri={}",referer);
-        model.addAttribute("login",new LoginDto());
+        request.getSession().setAttribute("referer", referer);
+
+        // 이전 페이지의 URL을 쿼리 매개변수로 전달
+        request.getSession().setAttribute("prevPage",redirectURL);
         return "member/login";
     }
 
     @PostMapping("/login")
-    public String postLogin(@ModelAttribute("login") LoginDto loginDto,HttpServletRequest request, HttpSession session,Model model){
+    public String postLogin(@ModelAttribute("login") LoginDto loginDto,
+                            HttpSession session,HttpServletRequest request, Model model){
+
         boolean login = memberService.login(loginDto);
+
 
         if (login){
             String username = loginDto.getUsername();
             Member member = memberService.findByUsername(username);
             session.setAttribute("loginMember",member);
 
-            //저장한 이전페이지 주소를 가져온다
             String prevPage = (String) request.getSession().getAttribute("prevPage");
-            //세션에 페지이 주소 삭제
-            request.getSession().removeAttribute("prevPage");
-            
-            return "redirect:" + (prevPage != null ? prevPage : "/");       //이전페이지가 있다면 이전페이지로 없다면 / 페이지로
+            String rePrevPage = (String) request.getSession().getAttribute("referer");
 
+            // 로그인 후에는 전달된 redirectURL로 리다이렉트
+            return "redirect:" + (prevPage.equals("/") ? rePrevPage : prevPage);
         }
 
         model.addAttribute("error", "비밀번호 또는 아이디가 올바르지 않습니다.");

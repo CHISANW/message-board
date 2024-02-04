@@ -33,6 +33,7 @@ public class Board {
 
 
     @OneToMany(mappedBy = "board",cascade = CascadeType.ALL)
+    @Builder.Default
     @JsonIgnore
     private List<Comment> comments = new ArrayList<>();
 

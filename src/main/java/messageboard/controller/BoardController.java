@@ -61,8 +61,8 @@ public class BoardController {
         }
         model.addAttribute("startPage",startPage);
         model.addAttribute("endPage",endPage);
-
         model.addAttribute("page",boards);
+
         return "board/board";
     }
 
@@ -168,14 +168,12 @@ public class BoardController {
             } else if (integer==1){
                 return ResponseEntity.ok(integer);
             }
-
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("비밀번호가 일치하지 않습니다.");
 
         }catch (Exception e){
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류발생");
         }
-
     }
 
     private static void getSession(Model model, HttpSession session) {      //로그인한 사용자 가져오기
