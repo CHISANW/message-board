@@ -3,6 +3,7 @@ package messageboard.service.Impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.CommentDto;
+import messageboard.Exception.CommentException;
 import messageboard.entity.Board;
 import messageboard.entity.Comment;
 import messageboard.entity.Member;
@@ -35,22 +36,26 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Comment save(CommentDto commentDto) {
 
-        Long id = commentDto.getBoardDto().getId();
-        String username = commentDto.getMemberDto().getUsername();
-        Member byUsername = memberService.findByUsername(username);
+            Long id = commentDto.getBoardDto().getId();
+            String username = commentDto.getMemberDto().getUsername();
+            Member byUsername = memberService.findByUsername(username);
 
-        Board byBoardId = boardService.findByBoardId(id);
+            if (byUsername==null){
+                log.info("오류발생");
+                throw new IllegalStateException();
+            }
 
-        Comment build = Comment.builder()
-                .content(commentDto.getComment())
-                .dateTime(LocalDateTime.now())
-                .member(byUsername)
-                .board(byBoardId).build();
+            Board byBoardId = boardService.findByBoardId(id);
 
+            Comment build = Comment.builder()
+                    .content(commentDto.getComment())
+                    .dateTime(LocalDateTime.now())
+                    .member(byUsername)
+                    .board(byBoardId).build();
 
-        Comment save = commentRepository.save(build);
-        setComment(byBoardId.getId());
-        return save;
+            Comment save = commentRepository.save(build);
+            setComment(byBoardId.getId());
+            return save;
     }
 
 
