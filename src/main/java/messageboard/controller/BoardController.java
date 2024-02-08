@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.BoardDto;
 import messageboard.Dto.CommentDto;
+import messageboard.Exception.LoginException;
 import messageboard.entity.Board;
 import messageboard.entity.Comment;
 import messageboard.entity.Member;
@@ -68,7 +69,6 @@ public class BoardController {
 
     @GetMapping("/boardWrit")
     public String write(Model model, HttpSession session){
-
         getSession(model, session);
         model.addAttribute("board",new BoardDto());
         return "board/wirteboard";
@@ -128,11 +128,21 @@ public class BoardController {
         }
     }
 
+
+    /**
+     *등록된 사용자많이 게시글을 수정할수 있다.
+     */
     @GetMapping("/board/update/{id}")
-    public String updateGetBoard(@PathVariable(name = "id") Long id,Model model){
+    public String updateGetBoard(@PathVariable(name = "id") Long id, Model model, HttpSession session){
         Board byBoardId = boardService.findByBoardId(id);
 
-        model.addAttribute("board",byBoardId);
+        String board_write_user = byBoardId.getMember().getUsername();
+        Member loginMember = getSession(model, session);
+        if (loginMember.getUsername().equals(board_write_user)) {
+            model.addAttribute("board",byBoardId);
+        }else
+            throw new LoginException("로그인한 사용자만 사용할수 있습니다.");
+
         return "board/updateBoard";
     }
 
@@ -176,9 +186,10 @@ public class BoardController {
         }
     }
 
-    private static void getSession(Model model, HttpSession session) {      //로그인한 사용자 가져오기
+    private static Member getSession(Model model, HttpSession session) {      //로그인한 사용자 가져오기
         Member loginMember = (Member) session.getAttribute("loginMember");
         model.addAttribute("loginMember",loginMember);
+        return loginMember;
     }
 
 }

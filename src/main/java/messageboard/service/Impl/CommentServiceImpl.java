@@ -72,6 +72,7 @@ public class CommentServiceImpl implements CommentService {
             commentRepository.deleteById(commentId);
             setComment(boardId);
 
+
         }catch (Exception e){
             e.printStackTrace();
         }

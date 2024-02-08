@@ -26,13 +26,13 @@ public class LogInterceptor implements HandlerInterceptor {
             HandlerMethod hm = (HandlerMethod) handler;
         }
 
-        log.info("REQUEST [{}] [{}] [{}] [{}]",uuid,requestURI, request.getDispatcherType(),handler);
+        log.info("요청 [{}] [{}] [{}] [{}]",uuid,requestURI, request.getDispatcherType(),handler);
         return true;
     }
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        log.info("postHandle [{}]",handler);
+        log.info("컨트롤러 실행후 발생! [{}]",handler);
     }
 
     @Override
@@ -40,10 +40,10 @@ public class LogInterceptor implements HandlerInterceptor {
         String requestURI = request.getRequestURI();
         String logId = (String) request.getAttribute(LOG_ID);
 
-        log.info("RESPONSE [{}] [{}] [{}] [{}]",logId,requestURI,request.getDispatcherType(),handler);
+        log.info("응답 [{}] [{}] [{}] [{}]",logId,requestURI,request.getDispatcherType(),handler);
 
         if (ex!=null){
-            log.error("afterCompletion error!!",ex);
+            log.error("에러발생 error!!",ex);
         }
     }
 }
