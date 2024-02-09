@@ -3,6 +3,8 @@ package messageboard.service.Impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.BoardDto;
+import messageboard.Exception.CommentException;
+import messageboard.Exception.NotFindPageException;
 import messageboard.entity.Board;
 import messageboard.entity.Member;
 import messageboard.repository.BoardRepository;
@@ -54,7 +56,7 @@ public class BoardServiceImpl implements BoardService {
     public Board findByBoardId(Long boardId) {
         try {
            return boardRepository.findById(boardId)
-                   .orElseThrow(()->new RuntimeException("Board not found with ID: "+ boardId));
+                   .orElseThrow(()->new NotFindPageException("해당 게시물을 찾을수가 없습니다.: "+ boardId));
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Error while finding Board by ID", e);

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.websocket.Session;
@@ -70,6 +71,7 @@ public class MemberController {
             String prevPage = (String) request.getSession().getAttribute("prevPage");
             String rePrevPage = (String) request.getSession().getAttribute("referer");
 
+
             // 로그인 후에는 전달된 redirectURL로 리다이렉트
             return "redirect:" + (prevPage.equals("/") ? rePrevPage : prevPage);
         }
@@ -79,8 +81,11 @@ public class MemberController {
     }
 
     @PostMapping("/logout")
-    public String logout(HttpSession session){
+    public String logout(HttpServletRequest request, HttpSession session){
+
+        String referer = request.getHeader("referer");  // 요청한 페이지의 URL 주소
         session.removeAttribute("loginMember");
-        return "redirect:/";
+
+        return "redirect:"+referer;
     }
 }

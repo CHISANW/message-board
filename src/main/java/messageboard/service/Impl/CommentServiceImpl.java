@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.CommentDto;
 import messageboard.Exception.CommentException;
+import messageboard.Exception.Login_RestException;
 import messageboard.entity.Board;
 import messageboard.entity.Comment;
 import messageboard.entity.Member;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -36,26 +38,26 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Comment save(CommentDto commentDto) {
 
-            Long id = commentDto.getBoardDto().getId();
-            String username = commentDto.getMemberDto().getUsername();
-            Member byUsername = memberService.findByUsername(username);
+        Long boardId = commentDto.getBoardDto().getId();
+        String username = commentDto.getMemberDto().getUsername();
+        Member byUsername = memberService.findByUsername(username);
 
-            if (byUsername==null){
-                log.info("오류발생");
-                throw new IllegalStateException();
-            }
+        Board byBoardId = boardService.findByBoardId(boardId);
 
-            Board byBoardId = boardService.findByBoardId(id);
+        if (byUsername==null){
+            throw new IllegalStateException();
+        }
 
-            Comment build = Comment.builder()
-                    .content(commentDto.getComment())
-                    .dateTime(LocalDateTime.now())
-                    .member(byUsername)
-                    .board(byBoardId).build();
 
-            Comment save = commentRepository.save(build);
-            setComment(byBoardId.getId());
-            return save;
+        Comment build = Comment.builder()
+                .content(commentDto.getComment())
+                .dateTime(LocalDateTime.now())
+                .member(byUsername)
+                .board(byBoardId).build();
+
+        Comment save = commentRepository.save(build);
+        setComment(byBoardId.getId());
+        return save;
     }
 
 
@@ -66,16 +68,23 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override     //댓글지우기
-    public void deleteComment(Long commentId) {
-        try {
-            Long boardId = commentRepository.findBoardId(commentId);
+    public void deleteComment(CommentDto commentDto){
+        String dtoUsername = commentDto.getMemberDto().getUsername();
+        String username = memberService.findByUsername(dtoUsername).getUsername();  //로그인한 사용자 이름
+
+
+        Long commentDtoId = commentDto.getId();
+        Optional<Comment> byId = commentRepository.findById(commentDtoId);
+        if (byId.isPresent()){
+            Long commentId = byId.get().getId();
+            String commentWriter = byId.get().getMember().getUsername();
+
+            if (username != commentWriter){
+                throw new CommentException("댓글 지우기 로직 오류");
+            }
             commentRepository.deleteById(commentId);
-            setComment(boardId);
-
-
-        }catch (Exception e){
-            e.printStackTrace();
         }
+
     }
 
     @Override //댓글수 카운트

@@ -17,7 +17,7 @@ public class LogInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String requestURI = request.getRequestURI();
-        String uuid = UUID.randomUUID().toString();
+        String uuid = UUID.randomUUID().toString().substring(0,5);
 
         request.setAttribute(LOG_ID,uuid);
 
@@ -32,7 +32,7 @@ public class LogInterceptor implements HandlerInterceptor {
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        log.info("컨트롤러 실행후 발생! [{}]",handler);
+//        log.info("컨트롤러 실행후 발생! [{}]",handler);
     }
 
     @Override

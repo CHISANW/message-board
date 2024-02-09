@@ -10,11 +10,13 @@
 
 
   $(document).ready(function () {
-    var login = document.getElementById('loginMember_username').value;
-    if (login !==null){
+    var loginElement = document.getElementById('loginMember_username');
+    var login;
+    if (loginElement !== null){
+      login = loginElement.value;
       loginverfiy = true;
     }
-  })
+  });
   function opList(){
     window.location.href="/board";
   }
@@ -59,7 +61,6 @@
   //댓글 버튼
   function boardComment(){
     if (loginverfiy===true) {
-      alert("댓글달기 버튼 동작");
       var id = document.getElementById('input_id').value;
       var comment = document.getElementById('comment_text').value;
       var login = document.getElementById('loginMember_username').value;
@@ -80,7 +81,6 @@
         contentType: "application/json",
         data: JSON.stringify(dto),
         success: function (response) {
-          alert("성공");
           location.reload();
         },
         error: function (xhr) {
@@ -95,11 +95,22 @@
 
   function deleteComment(){
     const comment_id = document.getElementById('comment_id').value;
+    var login = document.getElementById('loginMember_username');
+
+    if (login !== null){
+      login = login.value;
+    } else {
+      alert("로그인후 이용할수 있습니다.");
+      return; // 로그인되어 있지 않으면 함수를 종료합니다.
+    }
 
     var commentConfirm = confirm("삭제하시겠습니까?");
       if (commentConfirm) {
         var dto = {
-          "id": comment_id
+          "id": comment_id,
+          "memberDto": {
+            "username": login
+          }
         }
         $.ajax({
           url: "/delete/comment",
@@ -112,8 +123,14 @@
             location.reload();
           },
           error: function (xhr) {
-            if (xhr === 500) {
-              alert("삭제도중 오류발생");
+            if (xhr.status === 500) {
+             var errorMessage = JSON.parse(xhr.responseText);
+             $.each(errorMessage,function (key, value){
+               if (key==="message")
+                 alert(value);
+             });
+            }
+            if (xhr === 401){
             }
           }
         });

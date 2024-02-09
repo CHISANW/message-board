@@ -12,6 +12,7 @@ import java.util.Optional;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment,Long> {
 
+
     @Query("select c from Comment c where c.board.Id = :id")
     List<Comment> findByBoard_Id(@Param("id") Long id);
 

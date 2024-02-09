@@ -171,7 +171,6 @@ public class BoardController {
 
             Long boardId = boardDto.getId();
             Integer integer = boardService.passwordVerify(boardId, password, dtoUsername);
-            log.info("integer={}",integer);
 
             if (integer==2){
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("등록한 사용자만 수정할수 있습니다.");
