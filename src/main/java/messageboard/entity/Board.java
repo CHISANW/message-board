@@ -31,6 +31,8 @@ public class Board {
 
     private Integer count;
 
+    private Integer board_like;
+
 
     @OneToMany(mappedBy = "board",cascade = CascadeType.ALL)
     @Builder.Default

@@ -1,7 +1,9 @@
 package messageboard.service;
 
 import messageboard.Dto.BoardDto;
+import messageboard.Dto.CommentDto;
 import messageboard.entity.Board;
+import messageboard.entity.Board_Like;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -21,4 +23,5 @@ public interface BoardService {
     Board updateBoard(BoardDto boardDto);
 
     Page<Board> search(String title,Pageable pageable);
+    void board_like(BoardDto boardDto);
 }

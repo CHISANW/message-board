@@ -3,10 +3,13 @@ package messageboard.service.Impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.BoardDto;
+import messageboard.Dto.CommentDto;
 import messageboard.Exception.CommentException;
 import messageboard.Exception.NotFindPageException;
 import messageboard.entity.Board;
+import messageboard.entity.Board_Like;
 import messageboard.entity.Member;
+import messageboard.repository.BoardLIkeRepository;
 import messageboard.repository.BoardRepository;
 import messageboard.service.BoardService;
 import messageboard.service.MemberService;
@@ -30,7 +33,7 @@ public class BoardServiceImpl implements BoardService {
 
     private final BoardRepository boardRepository;
     private final MemberService memberService;
-
+    private final BoardLIkeRepository boardLIkeRepository;
 
     @Override
     public Board save(BoardDto boardDto) {
@@ -45,6 +48,7 @@ public class BoardServiceImpl implements BoardService {
                 .content(boardDto.getContent())
                 .count(0)
                 .member(byUsername)
+                .board_like(0)
                 .views(0)
                 .build();
 
@@ -78,6 +82,7 @@ public class BoardServiceImpl implements BoardService {
     public boolean deleteBoard(Long boardId,String memberUsername) {
         Member byUsername = memberService.findByUsername(memberUsername);
         Optional<Board> boardOptional = boardRepository.findById(boardId);
+
         if (boardOptional.isPresent()) {
             String writer = boardOptional.get().getWriter();
             if (byUsername!=null && writer.equals(memberUsername))
@@ -103,6 +108,41 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public Page<Board> search(String title,Pageable pageable) {
         return boardRepository.findByTitleContaining(title,pageable);
+    }
+
+    /**
+     * 댓글 좋아요 기능
+     */
+    @Override
+    public void board_like(BoardDto boardDto) {
+        Long boardDtoId = boardDto.getId();
+        String username = boardDto.getMemberDto().getUsername();       //로그인 사용자 정보
+
+        Board board = findByBoardId(boardDtoId);
+        Member member = memberService.findByUsername(username);
+        log.info("servier 11={}",member.getId());
+
+        if (member.getUsername()!=null){
+            Board_Like byMemberId = boardLIkeRepository.findMemberId(member.getId());     //로그인 사용자 정보를 사용해 좋아요했는지 찾는과정
+
+            if (byMemberId!=null&&member.getUsername().equals(byMemberId.getMember().getUsername())) {
+
+                board.setBoard_like(board.getBoard_like()-1);
+                log.info("[servie]={}",board.getId());
+                boardLIkeRepository.deleteByMemberId(member.getId());
+            }else if (!byMemberId.getMember().getUsername().equals(member.getUsername())){
+                board.setBoard_like(board.getBoard_like()+1);       //좋아요 1회 증가
+
+                Board_Like boardLike = Board_Like.builder()
+                        .like_check(true)
+                        .member(member)
+                        .board(board).build();
+                Board_Like board_like = boardLIkeRepository.save(boardLike);
+            }
+
+        }else
+            throw new RuntimeException("오류발생");
+
     }
 
     //조회수 기능

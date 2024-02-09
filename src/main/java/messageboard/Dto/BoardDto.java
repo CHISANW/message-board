@@ -24,6 +24,7 @@ public class BoardDto {
 
     private LocalDateTime dateTime;
 
+    private Integer board_like;
 
     private String writer;
     
@@ -33,7 +34,13 @@ public class BoardDto {
     @NotBlank(message = "내용을 입력하세요.")
     private String content;
 
+    private Integer bord_like;
+
+    private BoardLikeDto boardLikeDto;
+
     private MemberDto memberDto;
+
+
 
 
 
