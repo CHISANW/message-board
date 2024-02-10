@@ -3,8 +3,6 @@ package messageboard.service.Impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.BoardDto;
-import messageboard.Dto.CommentDto;
-import messageboard.Exception.CommentException;
 import messageboard.Exception.NotFindPageException;
 import messageboard.entity.Board;
 import messageboard.entity.Board_Like;
@@ -20,9 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -125,21 +120,27 @@ public class BoardServiceImpl implements BoardService {
         if (member.getUsername()!=null){
             Board_Like byMemberId = boardLIkeRepository.findMemberId(member.getId());     //로그인 사용자 정보를 사용해 좋아요했는지 찾는과정
 
+
             if (byMemberId!=null&&member.getUsername().equals(byMemberId.getMember().getUsername())) {
+                log.info("동일한 아이디 특정");
 
+                log.info("1={}",byMemberId.getMember().getUsername());
+                log.info("2={}",member.getUsername());
                 board.setBoard_like(board.getBoard_like()-1);
-                log.info("[servie]={}",board.getId());
-                boardLIkeRepository.deleteByMemberId(member.getId());
-            }else if (!byMemberId.getMember().getUsername().equals(member.getUsername())){
-                board.setBoard_like(board.getBoard_like()+1);       //좋아요 1회 증가
 
+                log.info("[servie]={}",board.getId());
+                Long id = member.getId();
+                log.info("id={}",id);
+                boardRepository.save(board);
+                boardLIkeRepository.deleteMemberId(member.getId());
+            }else {
+                board.setBoard_like(board.getBoard_like() + 1);       //좋아요 1회 증가
                 Board_Like boardLike = Board_Like.builder()
                         .like_check(true)
                         .member(member)
                         .board(board).build();
-                Board_Like board_like = boardLIkeRepository.save(boardLike);
+                boardLIkeRepository.save(boardLike);
             }
-
         }else
             throw new RuntimeException("오류발생");
 
