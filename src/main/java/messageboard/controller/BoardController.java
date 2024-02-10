@@ -9,6 +9,7 @@ import messageboard.entity.Board;
 import messageboard.entity.Comment;
 import messageboard.entity.Member;
 import messageboard.event.ViewsEvent;
+import messageboard.service.Impl.BoardLikeServiceImpl;
 import messageboard.service.Impl.BoardServiceImpl;
 import messageboard.service.Impl.CommentServiceImpl;
 import messageboard.service.Impl.MemberServiceImpl;
@@ -39,6 +40,7 @@ public class BoardController {
     private final BoardServiceImpl boardService;
     private final CommentServiceImpl commentService;
     private final ApplicationEventPublisher eventPublisher;
+    private final BoardLikeServiceImpl boardLikeService;
     private final MemberServiceImpl memberService;
 
     @GetMapping("/board")
@@ -46,7 +48,9 @@ public class BoardController {
         Page<Board> boards = boardService.search(title, pageable);
         List<Board> boardAll = boards.getContent();
 
-        getSession(model,session);
+        Member loginMember = getSession(model, session);
+
+
 
         int currentPage = boards.getPageable().getPageNumber() + 1; // 현재 페이지 (0부터 시작하는 인덱스를 1로 변환)
         int totalPages = boards.getTotalPages(); // 전체 페이지 수
@@ -55,7 +59,6 @@ public class BoardController {
 
         int startPage = Math.max(1, currentPage - visiblePages / 2); // 현재 페이지를 중심으로 앞으로 visiblePages/2 만큼의 범위를 표시
         int endPage = Math.min(totalPages, startPage + visiblePages - 1); // 시작 페이지부터 visiblePages 개수만큼의 범위를 표시
-
 
         if(boardAll !=null) {
             model.addAttribute("boardAll",boardAll);
@@ -104,9 +107,21 @@ public class BoardController {
 
         List<Comment> allComment = commentService.findAllComment(boardId);      //조회수 값조회
 
-        getSession(model,session);
+        Member loginMember = getSession(model, session);
+
+        if(loginMember.getUsername()!=null){
+            boolean boardCheck = boardLikeService.isBoardCheck(loginMember.getUsername());
+            model.addAttribute("board_like_check",boardCheck);
+        }
+
+//        if (loginMember.getUsername() == null) {
+//           throw new RuntimeException("널");
+//        }
+//        boolean boardCheck = boardLikeService.isBoardCheck(loginMember.getUsername());
+//        model.addAttribute("board_like_check",boardCheck);
         model.addAttribute("allComment",allComment);
         model.addAttribute("comment",new CommentDto());
+
         model.addAttribute("board",byBoardId);
         return "board/boardInfo";
     }
@@ -155,6 +170,18 @@ public class BoardController {
         }catch (Exception e){
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류 발생");
+        }
+    }
+
+    @PostMapping("/board/likes")
+    @ResponseBody
+    public ResponseEntity<?> boardLikes(@RequestBody BoardDto boardDto){
+        try{
+            int num = boardService.board_like(boardDto);
+            return ResponseEntity.ok(num);
+        }catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류발생");
         }
     }
 

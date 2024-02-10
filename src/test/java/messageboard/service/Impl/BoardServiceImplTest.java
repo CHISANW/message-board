@@ -30,7 +30,7 @@ class BoardServiceImplTest {
 
 
     @Test
-    @Rollback(value = false)
+//    @Rollback(value = false)
     void test(){
 
         //사용자 정보 등록후

@@ -107,32 +107,25 @@ public class BoardServiceImpl implements BoardService {
 
     /**
      * 댓글 좋아요 기능
+     *
      */
     @Override
-    public void board_like(BoardDto boardDto) {
+    public int board_like(BoardDto boardDto) {
         Long boardDtoId = boardDto.getId();
         String username = boardDto.getMemberDto().getUsername();       //로그인 사용자 정보
 
         Board board = findByBoardId(boardDtoId);
         Member member = memberService.findByUsername(username);
-        log.info("servier 11={}",member.getId());
 
         if (member.getUsername()!=null){
             Board_Like byMemberId = boardLIkeRepository.findMemberId(member.getId());     //로그인 사용자 정보를 사용해 좋아요했는지 찾는과정
 
-
             if (byMemberId!=null&&member.getUsername().equals(byMemberId.getMember().getUsername())) {
-                log.info("동일한 아이디 특정");
-
-                log.info("1={}",byMemberId.getMember().getUsername());
-                log.info("2={}",member.getUsername());
                 board.setBoard_like(board.getBoard_like()-1);
 
-                log.info("[servie]={}",board.getId());
-                Long id = member.getId();
-                log.info("id={}",id);
                 boardRepository.save(board);
                 boardLIkeRepository.deleteMemberId(member.getId());
+                return -1;
             }else {
                 board.setBoard_like(board.getBoard_like() + 1);       //좋아요 1회 증가
                 Board_Like boardLike = Board_Like.builder()
@@ -140,6 +133,7 @@ public class BoardServiceImpl implements BoardService {
                         .member(member)
                         .board(board).build();
                 boardLIkeRepository.save(boardLike);
+                return 1;
             }
         }else
             throw new RuntimeException("오류발생");

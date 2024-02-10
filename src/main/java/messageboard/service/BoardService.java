@@ -23,5 +23,5 @@ public interface BoardService {
     Board updateBoard(BoardDto boardDto);
 
     Page<Board> search(String title,Pageable pageable);
-    void board_like(BoardDto boardDto);
+    int board_like(BoardDto boardDto);
 }
