@@ -11,7 +11,9 @@ import messageboard.entity.Board_Like;
 import messageboard.entity.Member;
 import messageboard.repository.BoardLIkeRepository;
 import messageboard.repository.BoardRepository;
+import messageboard.repository.CommentRepository;
 import messageboard.service.BoardService;
+import messageboard.service.CommentService;
 import messageboard.service.MemberService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +33,7 @@ public class BoardServiceImpl implements BoardService {
     private final BoardRepository boardRepository;
     private final MemberService memberService;
     private final BoardLIkeRepository boardLIkeRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     public Board save(BoardDto boardDto) {
@@ -84,6 +87,8 @@ public class BoardServiceImpl implements BoardService {
             String writer = boardOptional.get().getWriter();
             if (byUsername!=null && writer.equals(memberUsername))
             {
+                boardLIkeRepository.deleteBoard_Id(boardId);
+                commentRepository.deleteByBoardId(boardId);
                 boardRepository.deleteById(boardId);
                 return true;
             }

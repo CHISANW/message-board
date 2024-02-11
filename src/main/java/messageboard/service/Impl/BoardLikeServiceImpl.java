@@ -6,9 +6,11 @@ import messageboard.entity.Member;
 import messageboard.repository.BoardLIkeRepository;
 import messageboard.service.BardLikeService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BoardLikeServiceImpl implements BardLikeService {
 
     private final MemberServiceImpl memberService;
@@ -29,5 +31,14 @@ public class BoardLikeServiceImpl implements BardLikeService {
         }
 
         return false;
+    }
+
+    /**
+     * 
+     * @param boardId 값으로 좋아요 삭제
+     */
+    @Override
+    public void deleteByBoardId(Long boardId) {
+        boardLIkeRepository.deleteBoard_Id(boardId);
     }
 }

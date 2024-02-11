@@ -43,7 +43,6 @@ public class BoardController {
     private final CommentServiceImpl commentService;
     private final ApplicationEventPublisher eventPublisher;
     private final BoardLikeServiceImpl boardLikeService;
-    private final MemberServiceImpl memberService;
 
     @GetMapping("/board")
     public String board(Model model, @PageableDefault(size = 4) Pageable pageable,@RequestParam(required = false, defaultValue = "") String title,HttpSession session){
@@ -132,6 +131,8 @@ public class BoardController {
         try{
             Long id = boardDto.getId();
             String memberUsername = boardDto.getMemberDto().getUsername();
+
+            boardLikeService.deleteByBoardId(id);
             boolean deleteBoard = boardService.deleteBoard(id, memberUsername);
             if (!deleteBoard){
                 throw new Login_RestException();

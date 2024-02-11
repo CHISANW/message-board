@@ -13,5 +13,7 @@ public interface CommentService {
 
     void deleteComment(CommentDto commentDto);
 
+    void deleteBoardID(Long boardId);
+
     Integer countComment(Long boardId);
 }

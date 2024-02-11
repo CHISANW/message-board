@@ -87,6 +87,11 @@ public class CommentServiceImpl implements CommentService {
 
     }
 
+    @Override
+    public void deleteBoardID(Long boardId) {
+        commentRepository.deleteByBoardId(boardId);
+    }
+
     @Override //댓글수 카운트
     public Integer countComment(Long boardId) {
         try{
