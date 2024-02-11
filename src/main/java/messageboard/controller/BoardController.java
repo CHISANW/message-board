@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.BoardDto;
 import messageboard.Dto.CommentDto;
+import messageboard.Exception.BadRequestException;
 import messageboard.Exception.LoginException;
+import messageboard.Exception.Login_RestException;
 import messageboard.entity.Board;
 import messageboard.entity.Comment;
 import messageboard.entity.Member;
@@ -109,16 +111,14 @@ public class BoardController {
 
         Member loginMember = getSession(model, session);
 
-        if(loginMember.getUsername()!=null){
-            boolean boardCheck = boardLikeService.isBoardCheck(loginMember.getUsername());
-            model.addAttribute("board_like_check",boardCheck);
+        boolean boardCheck = false;
+
+        if (loginMember!=null){
+            boardCheck = boardLikeService.isBoardCheck(loginMember);
         }
 
-//        if (loginMember.getUsername() == null) {
-//           throw new RuntimeException("널");
-//        }
-//        boolean boardCheck = boardLikeService.isBoardCheck(loginMember.getUsername());
-//        model.addAttribute("board_like_check",boardCheck);
+
+        model.addAttribute("board_like_check",boardCheck);
         model.addAttribute("allComment",allComment);
         model.addAttribute("comment",new CommentDto());
 
@@ -134,12 +134,14 @@ public class BoardController {
             String memberUsername = boardDto.getMemberDto().getUsername();
             boolean deleteBoard = boardService.deleteBoard(id, memberUsername);
             if (!deleteBoard){
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("등록된 사용자만 삭제가능");
+                throw new Login_RestException();
             }
             return ResponseEntity.ok("삭제성공");
         }catch (EntityNotFoundException e){
             e.printStackTrace();
            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("게시물이 존재하지 않습니다.");
+        }catch (Login_RestException e){
+            throw new Login_RestException("작성자만 삭제할수 있습니다.");
         }
     }
 
@@ -179,9 +181,9 @@ public class BoardController {
         try{
             int num = boardService.board_like(boardDto);
             return ResponseEntity.ok(num);
-        }catch (Exception e) {
+        }catch (Login_RestException e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류발생");
+           throw new Login_RestException("로그인후 이용할수 있습니다.");
         }
     }
 
@@ -200,21 +202,29 @@ public class BoardController {
             Integer integer = boardService.passwordVerify(boardId, password, dtoUsername);
 
             if (integer==2){
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("등록한 사용자만 수정할수 있습니다.");
+               throw new Login_RestException();
             } else if (integer==1){
                 return ResponseEntity.ok(integer);
             }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("비밀번호가 일치하지 않습니다.");
+           throw new BadRequestException();
 
+        }catch (Login_RestException e) {
+            throw new Login_RestException("작성자만 삭제 가능합니다.");
+        }catch (BadRequestException e){
+            throw new BadRequestException("비밀번호가 일치하지 않습니다.");
         }catch (Exception e){
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류발생");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류");
         }
     }
 
     private static Member getSession(Model model, HttpSession session) {      //로그인한 사용자 가져오기
         Member loginMember = (Member) session.getAttribute("loginMember");
-        model.addAttribute("loginMember",loginMember);
+//        if (loginMember==null) {
+//            throw new LoginException("로그인을 하지않았습니다.");
+//        }
+            model.addAttribute("loginMember", loginMember);
+
         return loginMember;
     }
 

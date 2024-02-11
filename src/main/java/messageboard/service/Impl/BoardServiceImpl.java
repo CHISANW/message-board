@@ -3,6 +3,8 @@ package messageboard.service.Impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.BoardDto;
+import messageboard.Exception.LoginException;
+import messageboard.Exception.Login_RestException;
 import messageboard.Exception.NotFindPageException;
 import messageboard.entity.Board;
 import messageboard.entity.Board_Like;
@@ -117,7 +119,7 @@ public class BoardServiceImpl implements BoardService {
         Board board = findByBoardId(boardDtoId);
         Member member = memberService.findByUsername(username);
 
-        if (member.getUsername()!=null){
+        if (member!=null){
             Board_Like byMemberId = boardLIkeRepository.findMemberId(member.getId());     //로그인 사용자 정보를 사용해 좋아요했는지 찾는과정
 
             if (byMemberId!=null&&member.getUsername().equals(byMemberId.getMember().getUsername())) {
@@ -136,7 +138,7 @@ public class BoardServiceImpl implements BoardService {
                 return 1;
             }
         }else
-            throw new RuntimeException("오류발생");
+            throw new Login_RestException("로그인을 한후에 이용할수 있습니다.");
 
     }
 

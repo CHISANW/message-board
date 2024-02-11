@@ -45,11 +45,16 @@
             window.location.href="/board";
           },
           error : function (xhr){
+            var errarMessage= JSON.parse(xhr.responseText);
             if (xhr.status === 500){
               alert("삭제도중 오류발생");
             }
             if (xhr.status===401){
-              alert("등록된 사용자만 삭제가능");
+              $.each(errarMessage,function (key, value){
+                if (key==="message")
+                  alert(value);
+              })
+
             }
           }
         });
@@ -155,8 +160,11 @@
   }
 
   function board_like(){
-    alert("좋아요 버튼동작");
-    const loginMember= document.getElementById('loginMember_username').value;
+    const loginEl= document.getElementById('loginMember_username');
+    var loginMember;
+    if(loginEl !=null){
+    loginMember=loginEl.value;
+    }
     var id = document.getElementById('input_id').value;
     var dto = {
       "id" : id,
@@ -171,20 +179,16 @@
       contentType : "application/json",
       data : JSON.stringify(dto),
       success : function (response){
-        if (response === 1){
-          // 버튼 비활성화 및 아이콘 변경
-          var button = document.querySelector("button[onclick='board_like()']");
-          var svgIcon = button.querySelector("svg");
-          svgIcon.setAttribute("class", "bi bi-heart-fill"); // 아이콘 변경
-          svgIcon.innerHTML = '<path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>';
-        }
-        if (response === -1){
-
-        }
+        location.reload();
       },
       error : function (xhr){
-        if (xhr.status===500){
-          alert("오류발생")
+        if (xhr.status===401){
+          var errorMessage = JSON.parse(xhr.responseText);
+          $.each(errorMessage,function (key,value){
+            if (key==="message"){
+              alert(value);
+            }
+          });
         }
       }
     });
@@ -291,13 +295,6 @@
                     <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
                   </svg>
               </button>
-
-              <button type="button" onclick="board_like()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart-fill" viewBox="0 0 16 16">
-                  <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
-                </svg>
-              </button>
-
             </div>
           </th>
         </tr>

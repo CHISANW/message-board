@@ -18,18 +18,13 @@ public class BoardLikeServiceImpl implements BardLikeService {
     /**
      * 기본 값으로는 false 값을 반환한다.
      */
-    public boolean isBoardCheck(String memberUsername){
+    public boolean isBoardCheck(Member loginMember){
 
-        Member byUsername = memberService.findByUsername(memberUsername);
-        if (byUsername.getUsername()==null){
-            throw new RuntimeException("체크오류");
-        }
+        String loginMemberUsername = loginMember.getUsername();
+        Member member = memberService.findByUsername(loginMemberUsername);
 
-        Long memberId = byUsername.getId();
-        Board_Like boardLike = boardLIkeRepository.findMemberId(memberId);
-
-        boolean likeCheck = boardLike.isLike_check();  //true 일떄
-        if (likeCheck){
+        Board_Like boardLike = boardLIkeRepository.findMemberId(member.getId());
+        if (boardLike!=null && boardLike.isLike_check()){
             return true;
         }
 

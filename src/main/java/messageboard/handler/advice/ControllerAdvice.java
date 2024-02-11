@@ -1,10 +1,7 @@
 package messageboard.handler.advice;
 
 import lombok.extern.slf4j.Slf4j;
-import messageboard.Exception.BoardException;
-import messageboard.Exception.CommentException;
-import messageboard.Exception.Login_RestException;
-import messageboard.Exception.NotFindPageException;
+import messageboard.Exception.*;
 import messageboard.handler.ErrorResult;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,5 +44,12 @@ public class ControllerAdvice {
         log.error("[404에러]",e);
         response.sendRedirect("/error-404");
         return new ErrorResult("404-EX",e.getMessage());
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResult> badRequest(BadRequestException e){
+        log.error("[401 에러]",e);
+        ErrorResult errorResult = new ErrorResult("BadRequest-EX", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResult);
     }
 }
