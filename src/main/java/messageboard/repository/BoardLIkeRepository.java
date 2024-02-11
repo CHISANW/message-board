@@ -10,8 +10,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BoardLIkeRepository extends JpaRepository<Board_Like,Long> {
 
-    @Query("select b from  Board_Like b where b.member.id = :memberId")
-    Board_Like findMemberId(@Param("memberId")Long memberId);
+    @Query("select b from  Board_Like b where b.member.id = :memberId and b.board.Id=:boardId")
+    Board_Like findMemberId(@Param("memberId")Long memberId,@Param("boardId") Long boardId);
 
     @Modifying
     @Query("delete from Board_Like b where b.member.id=:memberId")

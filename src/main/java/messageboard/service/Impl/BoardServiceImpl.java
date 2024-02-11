@@ -122,16 +122,16 @@ public class BoardServiceImpl implements BoardService {
         String username = boardDto.getMemberDto().getUsername();       //로그인 사용자 정보
 
         Board board = findByBoardId(boardDtoId);
-        Member member = memberService.findByUsername(username);
+        Member member = memberService.findByUsername(username);         //123
 
         if (member!=null){
-            Board_Like byMemberId = boardLIkeRepository.findMemberId(member.getId());     //로그인 사용자 정보를 사용해 좋아요했는지 찾는과정
+            Board_Like byMemberId = boardLIkeRepository.findMemberId(member.getId(),board.getId());     //로그인 사용자 정보를 사용해 좋아요했는지 찾는과정
 
-            if (byMemberId!=null&&member.getUsername().equals(byMemberId.getMember().getUsername())) {
+            if (byMemberId!=null&&byMemberId.getBoard().getId().equals(board.getId())) {
                 board.setBoard_like(board.getBoard_like()-1);
 
                 boardRepository.save(board);
-                boardLIkeRepository.deleteMemberId(member.getId());
+                boardLIkeRepository.deleteBoard_Id(board.getId());
                 return -1;
             }else {
                 board.setBoard_like(board.getBoard_like() + 1);       //좋아요 1회 증가

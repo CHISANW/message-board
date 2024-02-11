@@ -45,7 +45,7 @@ public class BoardController {
     private final BoardLikeServiceImpl boardLikeService;
 
     @GetMapping("/board")
-    public String board(Model model, @PageableDefault(size = 4) Pageable pageable,@RequestParam(required = false, defaultValue = "") String title,HttpSession session){
+    public String board(Model model, @PageableDefault(size = 10) Pageable pageable,@RequestParam(required = false, defaultValue = "") String title,HttpSession session){
         Page<Board> boards = boardService.search(title, pageable);
         List<Board> boardAll = boards.getContent();
 
@@ -113,7 +113,7 @@ public class BoardController {
         boolean boardCheck = false;
 
         if (loginMember!=null){
-            boardCheck = boardLikeService.isBoardCheck(loginMember);
+            boardCheck = boardLikeService.isBoardCheck(loginMember,boardId);
         }
 
 

@@ -24,7 +24,7 @@ public class Board_Like {
     private Board board;
 
     @OneToOne()
-    @JoinColumn(name = "member_Id",unique = true)
+    @JoinColumn(name = "member_Id")
     private Member member;
 
 
