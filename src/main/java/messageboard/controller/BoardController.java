@@ -64,6 +64,7 @@ public class BoardController {
         if(boardAll !=null) {
             model.addAttribute("boardAll",boardAll);
         }
+
         model.addAttribute("startPage",startPage);
         model.addAttribute("endPage",endPage);
         model.addAttribute("page",boards);

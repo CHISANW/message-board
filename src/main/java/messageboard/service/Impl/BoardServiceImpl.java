@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -145,6 +146,26 @@ public class BoardServiceImpl implements BoardService {
         }else
             throw new Login_RestException("로그인을 한후에 이용할수 있습니다.");
 
+    }
+
+    @Override
+    public List<Long> likeSon() {
+        return boardRepository.likeSon();
+    }
+
+    @Override
+    public List<Long> manyViewsDesc() {
+        return boardRepository.manyViewDesc();
+    }
+
+    @Override
+    public List<Long> manyCommentDesc() {
+        return boardRepository.manyCommentDesc();
+    }
+
+    @Override
+    public List<Long> lastBoardDesc() {
+        return boardRepository.lastBoard();
     }
 
     //조회수 기능

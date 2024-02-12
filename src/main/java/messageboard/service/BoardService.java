@@ -24,4 +24,9 @@ public interface BoardService {
 
     Page<Board> search(String title,Pageable pageable);
     int board_like(BoardDto boardDto);
+
+    List<Long> likeSon();
+    List<Long> manyViewsDesc();
+    List<Long> manyCommentDesc();
+    List<Long> lastBoardDesc();
 }

@@ -73,10 +73,10 @@
     </div>
 </nav>
 
-<div> 총 상품수 :
-    <span th:text="${page.totalElements}">19</span>
-</div>
-<form method="get" th:action="@{/board}">
+<!--<div> 총 상품수 :-->
+<!--    <span th:text="${page.totalElements}">19</span>-->
+<!--</div>-->
+<form method="get" th:action="@{/board/sortType}">
     <div class="col-6 d-flex justify-center">
         <label for="title" class="visually-hidden">검색</label>
         <input type="text" class="form-control flex-grow-1 me-2" id="title" name="title">
@@ -90,7 +90,7 @@
 
 <div class="btn-group">
     <li  class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-       정렬기준 선택하기
+        정렬기준 선택하기
     </li>
     <ul class="dropdown-menu dropdown-menu-end">
         <li><button class="dropdown-item" type="button" value="lastBoardType" onclick="lastBoard()">최신글순</button></li>
@@ -99,6 +99,7 @@
         <li><button class="dropdown-item" type="button" value="manyViewType" onclick="manyView()">조회수순</button></li>
     </ul>
 </div>
+
 
 
 
@@ -112,11 +113,11 @@
         <th scope="col">조회수</th>
     </tr>
     </thead>
-    <tbody th:each="boards: ${boardAll}">
+    <tbody th:each="boards: ${sortBoardList}">
     <tr >
         <th scope="row">
             <input type="hidden" th:value="${boards.id}" id="board_Id">
-            <a th:href="@{/board/{boardId}(boardId=${boards.id})}" th:text="${boards.id}"/>
+<!--            <a th:href="@{/board/{boardId}(boardId=${boards.id})}" th:text="${boards.id}"/>-->
         </th>
         <td>
             <span th:text="${boards.title}"></span>
@@ -134,16 +135,16 @@
 </div>
 <nav aria-label="Page navigation example">
     <ul class="pagination justify-content-center">
-        <li class="page-item " th:classappend="${1 == page.pageable.pageNumber +1}?'disabled'">
-            <a class="page-link" href="#" th:href="@{/board(page=${page.pageable.pageNumber - 1})}" aria-label="Previous">
+        <li class="page-item " >
+            <a class="page-link" href="#"  aria-label="Previous">
                 <span aria-hidden="true">&laquo;</span>
             </a>
         </li>
-        <li class="page-item" th:classappend="${i == page.pageable.pageNumber+1}? 'disabled'" th:each="i : ${#numbers.sequence(startPage,endPage)}">
-            <a class="page-link" href="#" th:href="@{/board(page=${i} -1)}" th:text="${i}" >pageNumber</a>
+        <li class="page-item">
+            <a class="page-link" href="#" >pageNumber</a>
         </li>
-        <li class="page-item" th:classappend="${page.totalPages == page.pageable.pageNumber +1 } ? 'disabled'">
-            <a class="page-link" href="#"  th:href="@{/board(page=${page.pageable.pageNumber+1})}">
+        <li class="page-item" >
+            <a class="page-link" href="#" >
                 <span aria-hidden="true">&raquo;</span>
             </a>
         </li>
