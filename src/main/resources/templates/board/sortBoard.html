@@ -26,21 +26,21 @@
 
         function likeson(){
             var value = document.querySelector('.dropdown-item[value="likeType"]').value;
-            window.location.href = "/board/sortType?sort="+value;
+            window.location.href = "/board/sortType?sortBoard="+value;
         }
 
         function manyComment(){
             var value = document.querySelector('.dropdown-item[value="manyCountType"]').value;
-            window.location.href = "/board/sortType?sort="+value;
+            window.location.href = "/board/sortType?sortBoard="+value;
         }
         function manyView(){
             var value = document.querySelector('.dropdown-item[value="manyViewType"]').value;
-            window.location.href = "/board/sortType?sort="+value;
+            window.location.href = "/board/sortType?sortBoard="+value;
         }
 
         function lastBoard(){
             var value = document.querySelector('.dropdown-item[value="lastBoardType"]').value;
-            window.location.href = "/board/sortType?sort="+value;
+            window.location.href = "/board/sortType?sortBoard="+value;
         }
     </script>
 
@@ -73,9 +73,9 @@
     </div>
 </nav>
 
-<!--<div> 총 상품수 :-->
-<!--    <span th:text="${page.totalElements}">19</span>-->
-<!--</div>-->
+<div> 총 상품수 :
+    <span th:text="${page.totalElements}">19</span>
+</div>
 <form method="get" th:action="@{/board/sortType}">
     <div class="col-6 d-flex justify-center">
         <label for="title" class="visually-hidden">검색</label>
@@ -90,7 +90,7 @@
 
 <div class="btn-group">
     <li  class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-        정렬기준 선택하기
+        <span th:text="${son}"></span>
     </li>
     <ul class="dropdown-menu dropdown-menu-end">
         <li><button class="dropdown-item" type="button" value="lastBoardType" onclick="lastBoard()">최신글순</button></li>
@@ -117,7 +117,7 @@
     <tr >
         <th scope="row">
             <input type="hidden" th:value="${boards.id}" id="board_Id">
-<!--            <a th:href="@{/board/{boardId}(boardId=${boards.id})}" th:text="${boards.id}"/>-->
+            <a th:href="@{/board/{boardId}(boardId=${boards.id})}" th:text="${boards.id}"/>
         </th>
         <td>
             <span th:text="${boards.title}"></span>
@@ -135,16 +135,16 @@
 </div>
 <nav aria-label="Page navigation example">
     <ul class="pagination justify-content-center">
-        <li class="page-item " >
-            <a class="page-link" href="#"  aria-label="Previous">
+        <li class="page-item " th:classappend="${1 == page.pageable.pageNumber +1}?'disabled'">
+            <a class="page-link" href="#"th:href="@{/board/sortType(sortBoard=${sortBoard}, page=${page.pageable.pageNumber - 1})}" aria-label="Previous">
                 <span aria-hidden="true">&laquo;</span>
             </a>
         </li>
-        <li class="page-item">
-            <a class="page-link" href="#" >pageNumber</a>
+        <li class="page-item" th:classappend="${i == page.pageable.pageNumber+1}? 'disabled'" th:each="i : ${#numbers.sequence(startPage,endPage)}">
+            <a class="page-link" href="#" th:href="@{/board/sortType(sortBoard=${sortBoard},page=${i} -1)}" th:text="${i}" >pageNumber</a>
         </li>
-        <li class="page-item" >
-            <a class="page-link" href="#" >
+        <li class="page-item" th:classappend="${page.totalPages == page.pageable.pageNumber +1 } ? 'disabled'">
+            <a class="page-link" th:href="@{/board/sortType(sortBoard=${sortBoard}, page=${page.pageable.pageNumber + 1})}" href="#">
                 <span aria-hidden="true">&raquo;</span>
             </a>
         </li>

@@ -3,17 +3,15 @@ package messageboard.service.Impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.BoardDto;
-import messageboard.Exception.LoginException;
 import messageboard.Exception.Login_RestException;
 import messageboard.Exception.NotFindPageException;
 import messageboard.entity.Board;
-import messageboard.entity.Board_Like;
+import messageboard.entity.Board_Like_check;
 import messageboard.entity.Member;
 import messageboard.repository.BoardLIkeRepository;
 import messageboard.repository.BoardRepository;
 import messageboard.repository.CommentRepository;
 import messageboard.service.BoardService;
-import messageboard.service.CommentService;
 import messageboard.service.MemberService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,7 +48,7 @@ public class BoardServiceImpl implements BoardService {
                 .content(boardDto.getContent())
                 .count(0)
                 .member(byUsername)
-                .board_like(0)
+                .boardLike(0)
                 .views(0)
                 .build();
 
@@ -126,17 +125,17 @@ public class BoardServiceImpl implements BoardService {
         Member member = memberService.findByUsername(username);         //123
 
         if (member!=null){
-            Board_Like byMemberId = boardLIkeRepository.findMemberId(member.getId(),board.getId());     //로그인 사용자 정보를 사용해 좋아요했는지 찾는과정
+            Board_Like_check byMemberId = boardLIkeRepository.findMemberId(member.getId(),board.getId());     //로그인 사용자 정보를 사용해 좋아요했는지 찾는과정
 
             if (byMemberId!=null&&byMemberId.getBoard().getId().equals(board.getId())) {
-                board.setBoard_like(board.getBoard_like()-1);
+                board.setBoardLike(board.getBoardLike()-1);
 
                 boardRepository.save(board);
                 boardLIkeRepository.deleteBoard_Id(board.getId());
                 return -1;
             }else {
-                board.setBoard_like(board.getBoard_like() + 1);       //좋아요 1회 증가
-                Board_Like boardLike = Board_Like.builder()
+                board.setBoardLike(board.getBoardLike() + 1);       //좋아요 1회 증가
+                Board_Like_check boardLike = Board_Like_check.builder()
                         .like_check(true)
                         .member(member)
                         .board(board).build();
@@ -146,6 +145,26 @@ public class BoardServiceImpl implements BoardService {
         }else
             throw new Login_RestException("로그인을 한후에 이용할수 있습니다.");
 
+    }
+
+    @Override
+    public Page<Board> likeSortDesc(Pageable pageable) {
+        return boardRepository.findAllByOrderByBoardLikeDesc(pageable);
+    }
+
+    @Override
+    public Page<Board> viewSortDesc(Pageable pageable) {
+        return boardRepository.findAllByOrderByViewsDesc(pageable);
+    }
+
+    @Override
+    public Page<Board> CommentSOrtDesc(Pageable pageable) {
+        return boardRepository.findAllByOrderByCountDesc(pageable);
+    }
+
+    @Override
+    public Page<Board> lasBoardSortDesc(Pageable pageable) {
+        return boardRepository.findAllByOrderByDateTimeDesc(pageable);
     }
 
     @Override
@@ -194,4 +213,28 @@ public class BoardServiceImpl implements BoardService {
         return 0;
     }
 
+    public List<Board> getSortedBoardsByType(String sortType) {
+        List<Long> sortList = getSortList(sortType);
+        List<Board> sortedBoards = new ArrayList<>();
+        for (Long boardId : sortList) {
+            Board board = findByBoardId(boardId);
+            sortedBoards.add(board);
+        }
+        return sortedBoards;
+    }
+
+    public List<Long> getSortList(String sortType) {
+        switch (sortType){
+            case "likeType":
+                return likeSon();
+            case "manyViewType":
+                return manyViewsDesc();
+            case "manyCountType":
+                return manyCommentDesc();
+            case "lastBoardType":
+                return  lastBoardDesc();
+            default:
+                throw new RuntimeException("잘못된 요청입니다.");
+        }
+    }
 }

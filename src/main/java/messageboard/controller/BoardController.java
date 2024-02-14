@@ -18,6 +18,7 @@ import messageboard.service.Impl.MemberServiceImpl;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +49,7 @@ public class BoardController {
     public String board(Model model, @PageableDefault(size = 10) Pageable pageable,@RequestParam(required = false, defaultValue = "") String title,HttpSession session){
         Page<Board> boards = boardService.search(title, pageable);
         List<Board> boardAll = boards.getContent();
+
 
         Member loginMember = getSession(model, session);
 

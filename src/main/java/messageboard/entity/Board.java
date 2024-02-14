@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,7 +32,7 @@ public class Board {
 
     private Integer count;
 
-    private Integer board_like;
+    private Integer boardLike;
 
 
     @OneToMany(mappedBy = "board",cascade = CascadeType.ALL)
@@ -41,7 +42,7 @@ public class Board {
 
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name = "member_Id")
     private Member member;
 

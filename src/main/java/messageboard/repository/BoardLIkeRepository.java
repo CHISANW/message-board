@@ -1,6 +1,6 @@
 package messageboard.repository;
 
-import messageboard.entity.Board_Like;
+import messageboard.entity.Board_Like_check;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -8,17 +8,17 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface BoardLIkeRepository extends JpaRepository<Board_Like,Long> {
+public interface BoardLIkeRepository extends JpaRepository<Board_Like_check,Long> {
 
-    @Query("select b from  Board_Like b where b.member.id = :memberId and b.board.Id=:boardId")
-    Board_Like findMemberId(@Param("memberId")Long memberId,@Param("boardId") Long boardId);
+    @Query("select b from  Board_Like_check b where b.member.id = :memberId and b.board.Id=:boardId")
+    Board_Like_check findMemberId(@Param("memberId")Long memberId, @Param("boardId") Long boardId);
 
     @Modifying
-    @Query("delete from Board_Like b where b.member.id=:memberId")
+    @Query("delete from Board_Like_check b where b.member.id=:memberId")
     void deleteMemberId(@Param("memberId")Long memberId);
 
 
     @Modifying
-    @Query("delete from Board_Like b where b.board.Id=:boardId")
+    @Query("delete from Board_Like_check b where b.board.Id=:boardId")
     void deleteBoard_Id(@Param("boardId") Long boardId);
 }

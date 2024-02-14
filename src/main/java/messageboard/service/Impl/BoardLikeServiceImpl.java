@@ -1,7 +1,7 @@
 package messageboard.service.Impl;
 
 import lombok.RequiredArgsConstructor;
-import messageboard.entity.Board_Like;
+import messageboard.entity.Board_Like_check;
 import messageboard.entity.Member;
 import messageboard.repository.BoardLIkeRepository;
 import messageboard.service.BardLikeService;
@@ -25,7 +25,7 @@ public class BoardLikeServiceImpl implements BardLikeService {
         String loginMemberUsername = loginMember.getUsername();
         Member member = memberService.findByUsername(loginMemberUsername);
 
-        Board_Like boardLike = boardLIkeRepository.findMemberId(member.getId(),boardId);
+        Board_Like_check boardLike = boardLIkeRepository.findMemberId(member.getId(),boardId);
         if (boardLike!=null && boardLike.isLike_check()){
             return true;
         }

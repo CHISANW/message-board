@@ -29,7 +29,7 @@ public class Member {
     private List<Board> boards = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "member" ,cascade = CascadeType.ALL)
     @Builder.Default
     private List<Comment> comments =new ArrayList<>();
 }
