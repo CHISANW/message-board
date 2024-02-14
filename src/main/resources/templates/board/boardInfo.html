@@ -98,8 +98,8 @@
       alert("로그인후 댓글을 작성할수 있습니다.");
   }
 
-  function deleteComment(){
-    const comment_id = document.getElementById('comment_id').value;
+  function deleteComment(commentId){
+    const comment_id = commentId;
     var login = document.getElementById('loginMember_username');
 
     if (login !== null){
@@ -150,6 +150,8 @@
     document.getElementById('passwordModal').style.display = 'none';
   }
 
+
+
   function updateBoardPage() {
     // 비밀번호 입력 모달 창 열기
     if(loginverfiy===true) {
@@ -193,7 +195,6 @@
       }
     });
 
-
   }
 
   function verifyPassword() {
@@ -233,6 +234,65 @@
         }
       });
       // closeModal();
+  }
+
+  //todo 게시판 모달창으로 수정하기
+  function openCommentModal(commentId) {
+    // 선택한 댓글의 내용 가져오기
+    if (loginverfiy === true) {
+      const commentContent = document.getElementById('comment_content').innerText;
+      // 수정할 내용을 모달의 입력 필드에 설정
+      document.getElementById('comment_id').value = commentId; // 댓글 ID를 hidden input에 설정
+      document.getElementById('edited_comment').value = commentContent;
+      // 모달 창 열기
+      document.getElementById('commentModal').style.display = 'block';
+      console.log(commentId);
+    }
+    else
+      alert("로그인후 사용 가능합니다.");
+  }
+
+  // /todo 게시판 모달창으로 수정하기
+  // 댓글 수정 모달 창 닫기
+  function closeCommentModal() {
+    document.getElementById('commentModal').style.display = 'none';
+  }
+  function saveEditedComment(){
+
+    const comment_id = document.getElementById('comment_id').value;
+    console.log(comment_id);
+    var login = document.getElementById('loginMember_username').value;
+    const edit_comment = document.getElementById('edited_comment').value;
+    console.log(edit_comment);
+
+    var CommentDto ={
+      "id" : comment_id,
+      "comment" : edit_comment,
+      "memberDto" : {
+        "username" : login
+      }
+    }
+
+    $.ajax({
+      url : "/board/update",
+      method : "post",
+      contentType : "application/json",
+      data : JSON.stringify(CommentDto),
+      success:function (response){
+        alert("댓글 수정 성공")
+        closeCommentModal();
+        window.location.reload();
+      },
+      error: function (xhr){
+        const errorMap = JSON.parse(xhr.responseText);
+        $.each(errorMap ,function (key, value){
+          if (key==="message"){
+           alert(value);
+          }
+        });
+      }
+    })
+
   }
 
 </script>
@@ -329,18 +389,21 @@
           <th>댓글창</th>
         </tr>
         </thead>
-        <tbody th:each="comment : ${allComment}">
+        <tbody th:each="comment: ${allComment}">
         <tr>
           <td>
             <input type="hidden" th:value="${comment.id}" id="comment_id">
             <div th:text="${comment.member.username}" style="font-weight: bold;color: #0D0D0D"></div>
-            <div th:text="${comment.content}"/>
+            <div id ="comment_content"th:text="${comment.content}"/>
             <div th:text="${#temporals.format(comment.dateTime, 'yyyy-MM-dd HH:mm:ss')}" style="font-size: 10px"/>
-            <button onclick="deleteComment()" style="font-size: 8px">
+            <button th:onclick="deleteComment([[${comment.id}]])" style="font-size: 8px">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                 <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
               </svg></button>
+            <button type="button" th:onclick="openCommentModal([[${comment.id}]])" style="padding: 0;">
+              <img src="/img/CommnetModfiy.PNG" style="width: 20px; height: 20px;">
+            </button>
           </td>
         </tr>
         </tbody>
@@ -362,6 +425,16 @@
       <label for="password">비밀번호를 입력하세요:</label>
       <input type="password" id="password">
       <button onclick="verifyPassword()">확인</button>
+    </div>
+  </div>
+
+<!--  게시판 댓글 수정 모달창-->
+  <div id="commentModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeCommentModal()">&times;</span>
+      <label for="edited_comment">댓글 수정:</label>
+      <textarea id="edited_comment" rows="5" cols="80"></textarea>
+      <button onclick="saveEditedComment()">저장</button>
     </div>
   </div>
 

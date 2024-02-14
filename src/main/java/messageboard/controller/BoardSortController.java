@@ -33,11 +33,18 @@ public class BoardSortController {
 
     @GetMapping("/board/sortType")
     public String likeSon(@RequestParam(value = "sortBoard",defaultValue = "",required = false) String sortType,
+                          @RequestParam(value = "title",defaultValue = "", required = false) String title,
                           Model model,
                           HttpSession session,
                           @PageableDefault(size = 10) Pageable pageable){
 
         Member loginMember = (Member) session.getAttribute("loginMember");
+
+        Page<Board> boardSearch = boardService.search(title, pageable);
+        List<Board> boardAll = boardSearch.getContent();
+
+        log.info("boardAll={]",boardAll);
+        log.info("boardSearch={]",boardSearch);
 
         if (sortType.equals("likeType")){
             Page<Board> boards = boardService.likeSortDesc(pageable);

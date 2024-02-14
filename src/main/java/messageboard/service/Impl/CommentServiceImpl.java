@@ -13,17 +13,9 @@ import messageboard.service.CommentService;
 import messageboard.service.MemberService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Transactional
@@ -100,6 +92,27 @@ public class CommentServiceImpl implements CommentService {
             e.printStackTrace();
             throw new RuntimeException("값이 나오지 않았습니다.");
         }
+    }
+
+    @Override
+    public void updateComment(CommentDto commentDto) {
+        Long id = commentDto.getId();
+        String username = commentDto.getMemberDto().getUsername();
+        Member byUsername = memberService.findByUsername(username);
+
+        Comment comment = commentRepository.findById(id).orElseThrow(() -> new CommentException("댓글 수정시 Id 오류"));
+
+        log.info("서브스 댓글 수정={}",comment.getMember().getUsername().equals(byUsername.getUsername()));
+        log.info("comment 댓글 수정={}",comment.getMember().getUsername());
+        log.info("byUsername 댓글 수정={}",byUsername.getUsername());
+        if(byUsername==null || !comment.getMember().getUsername().equals(byUsername.getUsername())){
+            throw new Login_RestException("사용자 인증 오류");
+        }
+
+        comment.setContent(commentDto.getComment());
+        comment.setUpdateDateTime(LocalDateTime.now());
+        commentRepository.save(comment);
+
     }
 
     private Board setComment(Long boardId){       // 총합 댓글 갯수 설정
