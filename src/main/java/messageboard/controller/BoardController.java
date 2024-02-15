@@ -4,9 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.BoardDto;
 import messageboard.Dto.CommentDto;
-import messageboard.Exception.BadRequestException;
-import messageboard.Exception.LoginException;
-import messageboard.Exception.Login_RestException;
+import messageboard.Exception.*;
 import messageboard.entity.Board;
 import messageboard.entity.Comment;
 import messageboard.entity.Member;
@@ -28,7 +26,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.EntityNotFoundException;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.HashMap;
@@ -50,10 +48,7 @@ public class BoardController {
         Page<Board> boards = boardService.search(title, pageable);
         List<Board> boardAll = boards.getContent();
 
-
-        Member loginMember = getSession(model, session);
-
-
+        getSession(model, session);
 
         int currentPage = boards.getPageable().getPageNumber() + 1; // 현재 페이지 (0부터 시작하는 인덱스를 1로 변환)
         int totalPages = boards.getTotalPages(); // 전체 페이지 수
@@ -98,34 +93,35 @@ public class BoardController {
 
             return ResponseEntity.ok("성공");
 
-        }catch (Exception e){
+        }catch (Login_RestException e){
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류발생");
+            throw new Login_RestException("회원가입한 사용자만 사용가능합니다.");
         }
     }
 
     @GetMapping("/board/{boardId}")
     public String boardInfo(@PathVariable(name = "boardId") Long boardId,Model model,HttpSession session){
-        Board byBoardId = boardService.findByBoardId(boardId);
-        eventPublisher.publishEvent(new ViewsEvent(byBoardId));     //조회시 카운터 증가
 
-        List<Comment> allComment = commentService.findAllComment(boardId);      //조회수 값조회
+            Board byBoardId = boardService.findByBoardId(boardId);
+            eventPublisher.publishEvent(new ViewsEvent(byBoardId));     //조회시 카운터 증가
 
-        Member loginMember = getSession(model, session);
+            List<Comment> allComment = commentService.findAllComment(boardId);      //조회수 값조회
 
-        boolean boardCheck = false;
+            Member loginMember = getSession(model, session);
 
-        if (loginMember!=null){
-            boardCheck = boardLikeService.isBoardCheck(loginMember,boardId);
-        }
+            boolean boardCheck = false;
+
+            if (loginMember != null) {
+                boardCheck = boardLikeService.isBoardCheck(loginMember, boardId);
+            }
 
 
-        model.addAttribute("board_like_check",boardCheck);
-        model.addAttribute("allComment",allComment);
-        model.addAttribute("comment",new CommentDto());
+            model.addAttribute("board_like_check", boardCheck);
+            model.addAttribute("allComment", allComment);
+            model.addAttribute("comment", new CommentDto());
+            model.addAttribute("board", byBoardId);
+            return "board/boardInfo";
 
-        model.addAttribute("board",byBoardId);
-        return "board/boardInfo";
     }
 
     @DeleteMapping("/delete")
@@ -141,11 +137,10 @@ public class BoardController {
                 throw new Login_RestException();
             }
             return ResponseEntity.ok("삭제성공");
-        }catch (EntityNotFoundException e){
-            e.printStackTrace();
-           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("게시물이 존재하지 않습니다.");
+        }catch (NotFindPageException e){
+            throw new NotFindPage_RestException("게시글이 존재하지 않습니다.");
         }catch (Login_RestException e){
-            throw new Login_RestException("작성자만 삭제할수 있습니다.");
+            throw new Login_RestException("작성자만 삭제할 수 있습니다.");
         }
     }
 
@@ -162,7 +157,7 @@ public class BoardController {
         if (loginMember.getUsername().equals(board_write_user)) {
             model.addAttribute("board",byBoardId);
         }else
-            throw new LoginException("로그인한 사용자만 사용할수 있습니다.");
+            throw new LoginException("작성자만 수정할수 있습니다.");
 
         return "board/updateBoard";
     }
@@ -173,9 +168,8 @@ public class BoardController {
         try{
             Board board = boardService.updateBoard(boardDto);
             return ResponseEntity.ok(board);
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류 발생");
+        }catch (NotFindPageException e){
+            throw new NotFindPage_RestException("해당 게시물을 찾을수 없습니다.");
         }
     }
 
@@ -195,7 +189,7 @@ public class BoardController {
 
     @PostMapping("/password/verify")
     @ResponseBody
-    public ResponseEntity<?> verifyPassword(@RequestBody BoardDto boardDto){
+    public ResponseEntity<?> verifyPassword(@RequestBody BoardDto boardDto, HttpServletResponse response){
         try {
             log.info("dto={}",boardDto);
             String password = boardDto.getPassword();
@@ -216,17 +210,14 @@ public class BoardController {
             throw new Login_RestException("작성자만 삭제 가능합니다.");
         }catch (BadRequestException e){
             throw new BadRequestException("비밀번호가 일치하지 않습니다.");
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류");
+        }catch (NotFindPageException e){
+            throw new NotFindPage_RestException("해당 게시물이 더이상 존재하지 않습니다.");
         }
     }
 
     private static Member getSession(Model model, HttpSession session) {      //로그인한 사용자 가져오기
         Member loginMember = (Member) session.getAttribute("loginMember");
-//        if (loginMember==null) {
-//            throw new LoginException("로그인을 하지않았습니다.");
-//        }
+
             model.addAttribute("loginMember", loginMember);
 
         return loginMember;

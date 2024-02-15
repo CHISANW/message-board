@@ -231,6 +231,10 @@
           if (xhr.status===401){
             alert("등록한 사용자만 수정할수 있습니다.");
           }
+          if (xhr.status===404){
+            alert("해당 게시물이 더이상 존재하지 않습니다.");
+            window.location="/board";
+          }
         }
       });
       // closeModal();

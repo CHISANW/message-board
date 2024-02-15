@@ -6,30 +6,27 @@ import messageboard.handler.ErrorResult;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ServerErrorException;
 
-import javax.security.auth.login.LoginException;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
 @RestControllerAdvice(basePackages = "messageboard.controller")
-public class ControllerAdvice {
+public class RestApiControllerAdvice {
 
 
     @ExceptionHandler
-    public ResponseEntity<ErrorResult> commentHandler(CommentException e, HttpServletResponse response) throws IOException {
+    public ResponseEntity<ErrorResult> commentHandler(CommentException e) throws IOException {
         log.error("[exception] ",e);
         ErrorResult errorResult = new ErrorResult("Comment-EX", e.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResult);
     }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ErrorResult loginHandler(LoginException e){
-        log.error("[exception] ex",e);
-       return new ErrorResult("login-EX", e.getMessage());
+    @ExceptionHandler(NotFindPage_RestException.class)
+    public ResponseEntity<ErrorResult> notFindPageRest(NotFindPage_RestException e) {
+        log.error("[404에러]", e);
+        ErrorResult errorResult = new ErrorResult("Update-EX", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResult);
     }
 
     @ExceptionHandler
@@ -40,16 +37,16 @@ public class ControllerAdvice {
     }
 
     @ExceptionHandler
-    public ErrorResult notFindPage(NotFindPageException e,HttpServletResponse response) throws IOException {
-        log.error("[404에러]",e);
-        response.sendRedirect("/error-404");
-        return new ErrorResult("404-EX",e.getMessage());
-    }
-
-    @ExceptionHandler
     public ResponseEntity<ErrorResult> badRequest(BadRequestException e){
         log.error("[401 에러]",e);
         ErrorResult errorResult = new ErrorResult("BadRequest-EX", e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResult);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResult> serverError(ServerErrorException e){
+        log.info("[505 에러]",e);
+        ErrorResult errorResult = new ErrorResult("ServerError", e.getMessage());
+       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResult);
     }
 }

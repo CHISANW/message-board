@@ -25,13 +25,18 @@
         alert("변경성공");
         window.location.href="/board";
       },error : function (xhr){
+          var errorMap = JSON.parse(xhr.responseText);
+          $.each(errorMap,function (key, value){
+              if (key==="Update-EX") {
+                  alert(value);
+                  window.location="/board"
+              }
+          })
         if(xhr.status === 500){
           alert("변경중 오류 발생");
         }
       }
-
-
-    })
+    });
     alert("보드 업데이트 실행");
   }
 </script>

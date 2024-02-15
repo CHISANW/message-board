@@ -40,6 +40,9 @@ public class BoardServiceImpl implements BoardService {
 
         String username = boardDto.getMemberDto().getUsername();
         Member byUsername = memberService.findByUsername(username);
+        if (byUsername==null)
+            throw new Login_RestException("상품 저장 오류");
+
         Board build = Board.builder()
                 .title(boardDto.getTitle())
                 .dateTime(LocalDateTime.now())
@@ -58,13 +61,8 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public Board findByBoardId(Long boardId) {
-        try {
-           return boardRepository.findById(boardId)
-                   .orElseThrow(()->new NotFindPageException("해당 게시물을 찾을수가 없습니다.: "+ boardId));
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error while finding Board by ID", e);
-        }
+            return boardRepository.findById(boardId)
+                    .orElseThrow(() -> new NotFindPageException("해당 게시물을 찾을수가 없습니다.: " + boardId));
     }
 
     @Override
@@ -93,7 +91,7 @@ public class BoardServiceImpl implements BoardService {
                 return true;
             }
         } else {
-            throw new EntityNotFoundException("게시물이 존재하지 않습니다. ID: " + boardId);
+            throw new NotFindPageException("게시물이 존재하지 않습니다. ID: " + boardId);
         }
         return false;
     }
@@ -102,6 +100,7 @@ public class BoardServiceImpl implements BoardService {
     public Board updateBoard(BoardDto boardDto) {
 
         Board byBoardId = findByBoardId(boardDto.getId());
+
         byBoardId.update(boardDto.getTitle(), boardDto.getContent());
         return boardRepository.save(byBoardId);
 
