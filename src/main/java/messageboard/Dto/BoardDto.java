@@ -1,21 +1,16 @@
 package messageboard.Dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-import messageboard.entity.Board;
-import messageboard.entity.Comment;
 
-import javax.persistence.OneToMany;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
-import java.util.List;
+
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoardDto {
-
 
     private Long id;
 
@@ -39,9 +34,5 @@ public class BoardDto {
     private BoardLikeDto boardLikeDto;
 
     private MemberDto memberDto;
-
-
-
-
 
 }
