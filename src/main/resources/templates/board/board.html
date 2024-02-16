@@ -120,7 +120,7 @@
         </th>
         <td>
             <span th:text="${boards.title}"></span>
-            <span th:if="${boards.count != 0}" th:text="'('+${boards.count}+')'">a</span>
+            <span th:if="${boards.count != 0}" th:text="'('+${boards.count}+')'"  style="font-weight: bold">a</span>
         </td>
         <td th:text="${boards.writer}">김민우</td>
         <td th:text="${#temporals.format(boards.dateTime, 'yyyy-MM-dd')}">오늘작성</td>
