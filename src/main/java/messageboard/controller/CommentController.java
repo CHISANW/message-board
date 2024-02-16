@@ -5,16 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.CommentDto;
 import messageboard.Exception.CommentException;
 import messageboard.Exception.Login_RestException;
+import messageboard.Exception.NotFindPageException;
+import messageboard.Exception.NotFindPage_RestException;
 import messageboard.entity.Comment;
 import messageboard.entity.Member;
 import messageboard.service.Impl.CommentServiceImpl;
 
 import messageboard.service.MemberService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpSession;
 
 
 @RestController
@@ -42,11 +42,12 @@ public class CommentController {
     @ResponseBody
     public ResponseEntity<?> comment(@RequestBody CommentDto commentDto){
         try{
-
             Comment saveComment = commentService.save(commentDto);
             return ResponseEntity.ok(saveComment);
-        }catch (IllegalStateException e) {
+        }catch (Login_RestException e) {
            throw new Login_RestException("로그인을 하지 않았습니다.");
+        }catch (NotFindPageException e){
+            throw new NotFindPage_RestException("게시글이 존재하지 않습니다.");
         }
     }
 

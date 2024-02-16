@@ -37,7 +37,7 @@ public class CommentServiceImpl implements CommentService {
         Board byBoardId = boardService.findByBoardId(boardId);
 
         if (byUsername==null){
-            throw new IllegalStateException();
+            throw new Login_RestException();
         }
 
 
