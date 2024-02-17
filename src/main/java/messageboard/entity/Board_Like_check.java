@@ -29,5 +29,4 @@ public class Board_Like_check {
 
     private boolean like_check;
 
-
 }

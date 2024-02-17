@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
-public interface BoardService {
+public interface BoardService{
 
     Board save(BoardDto boardDto);
 
@@ -22,14 +22,7 @@ public interface BoardService {
     Page<Board> search(String title,Pageable pageable);
     int board_like(BoardDto boardDto);
 
-    Page<Board> likeSortDesc(Pageable pageable);
-    Page<Board> viewSortDesc(Pageable pageable);
-    Page<Board> CommentSOrtDesc(Pageable pageable);
-    Page<Board> lasBoardSortDesc(Pageable pageable);
+   Integer passwordVerify(Long boardId, String password,String username);
 
 
-    List<Long> likeSon();
-    List<Long> manyViewsDesc();
-    List<Long> manyCommentDesc();
-    List<Long> lastBoardDesc();
 }

@@ -3,6 +3,7 @@ package messageboard.service.Impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.BoardDto;
+import messageboard.Exception.BoardException;
 import messageboard.Exception.Login_RestException;
 import messageboard.Exception.NotFindPageException;
 import messageboard.entity.Board;
@@ -12,6 +13,7 @@ import messageboard.repository.BoardLIkeRepository;
 import messageboard.repository.BoardRepository;
 import messageboard.repository.CommentRepository;
 import messageboard.service.BoardService;
+import messageboard.service.BoardSortService;
 import messageboard.service.MemberService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +31,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService {
+
 
     private final BoardRepository boardRepository;
     private final MemberService memberService;
@@ -146,45 +149,6 @@ public class BoardServiceImpl implements BoardService {
 
     }
 
-    @Override
-    public Page<Board> likeSortDesc(Pageable pageable) {
-        return boardRepository.findAllByOrderByBoardLikeDesc(pageable);
-    }
-
-    @Override
-    public Page<Board> viewSortDesc(Pageable pageable) {
-        return boardRepository.findAllByOrderByViewsDesc(pageable);
-    }
-
-    @Override
-    public Page<Board> CommentSOrtDesc(Pageable pageable) {
-        return boardRepository.findAllByOrderByCountDesc(pageable);
-    }
-
-    @Override
-    public Page<Board> lasBoardSortDesc(Pageable pageable) {
-        return boardRepository.findAllByOrderByDateTimeDesc(pageable);
-    }
-
-    @Override
-    public List<Long> likeSon() {
-        return boardRepository.likeSon();
-    }
-
-    @Override
-    public List<Long> manyViewsDesc() {
-        return boardRepository.manyViewDesc();
-    }
-
-    @Override
-    public List<Long> manyCommentDesc() {
-        return boardRepository.manyCommentDesc();
-    }
-
-    @Override
-    public List<Long> lastBoardDesc() {
-        return boardRepository.lastBoard();
-    }
 
     //조회수 기능
     public Board countViews(Long boardId){
@@ -212,28 +176,6 @@ public class BoardServiceImpl implements BoardService {
         return 0;
     }
 
-    public List<Board> getSortedBoardsByType(String sortType) {
-        List<Long> sortList = getSortList(sortType);
-        List<Board> sortedBoards = new ArrayList<>();
-        for (Long boardId : sortList) {
-            Board board = findByBoardId(boardId);
-            sortedBoards.add(board);
-        }
-        return sortedBoards;
-    }
 
-    public List<Long> getSortList(String sortType) {
-        switch (sortType){
-            case "likeType":
-                return likeSon();
-            case "manyViewType":
-                return manyViewsDesc();
-            case "manyCountType":
-                return manyCommentDesc();
-            case "lastBoardType":
-                return  lastBoardDesc();
-            default:
-                throw new RuntimeException("잘못된 요청입니다.");
-        }
-    }
+
 }

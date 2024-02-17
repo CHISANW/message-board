@@ -14,11 +14,6 @@ public interface BoardLIkeRepository extends JpaRepository<Board_Like_check,Long
     Board_Like_check findMemberId(@Param("memberId")Long memberId, @Param("boardId") Long boardId);
 
     @Modifying
-    @Query("delete from Board_Like_check b where b.member.id=:memberId")
-    void deleteMemberId(@Param("memberId")Long memberId);
-
-
-    @Modifying
     @Query("delete from Board_Like_check b where b.board.Id=:boardId")
     void deleteBoard_Id(@Param("boardId") Long boardId);
 }

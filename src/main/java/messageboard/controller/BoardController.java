@@ -9,14 +9,12 @@ import messageboard.entity.Board;
 import messageboard.entity.Comment;
 import messageboard.entity.Member;
 import messageboard.event.ViewsEvent;
-import messageboard.service.Impl.BoardLikeServiceImpl;
-import messageboard.service.Impl.BoardServiceImpl;
-import messageboard.service.Impl.CommentServiceImpl;
-import messageboard.service.Impl.MemberServiceImpl;
+import messageboard.service.BardLikeService;
+import messageboard.service.BoardService;
+import messageboard.service.CommentService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +24,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.HashMap;
@@ -38,10 +35,10 @@ import java.util.Map;
 @Slf4j
 public class BoardController {
 
-    private final BoardServiceImpl boardService;
-    private final CommentServiceImpl commentService;
+    private final BoardService  boardService;
+    private final CommentService commentService;
     private final ApplicationEventPublisher eventPublisher;
-    private final BoardLikeServiceImpl boardLikeService;
+    private final BardLikeService boardLikeService;
 
     @GetMapping("/board")
     public String board(Model model, @PageableDefault(size = 10) Pageable pageable,@RequestParam(required = false, defaultValue = "") String title,HttpSession session){
@@ -75,7 +72,6 @@ public class BoardController {
         model.addAttribute("board",new BoardDto());
         return "board/wirteboard";
     }
-
 
 
     @PostMapping("/boardWrit")
@@ -185,11 +181,9 @@ public class BoardController {
         }
     }
 
-
-
     @PostMapping("/password/verify")
     @ResponseBody
-    public ResponseEntity<?> verifyPassword(@RequestBody BoardDto boardDto, HttpServletResponse response){
+    public ResponseEntity<?> verifyPassword(@RequestBody BoardDto boardDto){
         try {
             log.info("dto={}",boardDto);
             String password = boardDto.getPassword();
@@ -214,7 +208,6 @@ public class BoardController {
             throw new NotFindPage_RestException("해당 게시물이 더이상 존재하지 않습니다.");
         }
     }
-
     private static Member getSession(Model model, HttpSession session) {      //로그인한 사용자 가져오기
         Member loginMember = (Member) session.getAttribute("loginMember");
 
