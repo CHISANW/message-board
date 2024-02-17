@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="fragments/header :: header"></head>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script th:inline="javascript">
-
         var loginverfiy = false;
 
         $(document).ready(function () {
@@ -50,23 +50,28 @@
         <a class="navbar-brand" href="#" th:href="@{/}">CRUD 게시판</a>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="navbar-nav">
-                <div th:if="${loginMember != null}" class="d-flex justify-content-between">
-                    <div class="nav-item">
-                        <a class="nav-link active" aria-current="page" th:text="'사용자: '+${loginMember.username}">Home</a>
-                    </div>
-                    <div class="nav-item">
-                        <form th:action="@{/logout}" method="post">
-                            <button type="submit" class="btn btn-link">로그아웃</button>
-                        </form>
+                <div sec:authorize="isAuthenticated()">
+                    <div class="d-flex justify-content-between">
+                        <input type="hidden" id="loginMember_username" th:value="${member.username}">
+                        <div class="nav-item">
+                            <a class="nav-link active" aria-current="page" th:text="'사용자: '+${member.username}">Home</a>
+                        </div>
+                        <div class="nav-item">
+                            <form th:action="@{/logout}" method="post">
+                                <button type="submit" class="btn btn-link">로그아웃</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
-                <div th:if="${loginMember==null}"  class="d-flex justify-content-between">
-                    <li class="nav-item" >
-                        <a class="nav-link active" aria-current="page" th:href="@{/login}">로그인</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/createMember}">회원가입</a>
-                    </li>
+                <div sec:authorize="!isAuthenticated()">
+                    <div   class="d-flex justify-content-between">
+                        <li class="nav-item" >
+                            <a class="nav-link active" aria-current="page" th:href="@{/login}">로그인</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/createMember}">회원가입</a>
+                        </li>
+                    </div>
                 </div>
             </ul>
         </div>
@@ -150,9 +155,6 @@
     </ul>
 </nav>
 
-<div th:if="${loginMember!=null}">
-    <input type="hidden" id="loginMember_username" th:value="${loginMember.username}">
-</div>
 
 </body>
 </html>

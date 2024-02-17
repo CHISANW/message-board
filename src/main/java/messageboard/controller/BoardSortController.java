@@ -6,9 +6,13 @@ import messageboard.Exception.BoardException;
 import messageboard.entity.Board;
 import messageboard.entity.Member;
 import messageboard.service.BoardSortService;
+import messageboard.service.MemberService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +26,7 @@ import java.util.*;
 public class BoardSortController {
 
     private final BoardSortService boardService;
-
+    private final MemberService memberService;
     @GetMapping("/board/sortType")
     public String likeSon(@RequestParam(value = "sortBoard",defaultValue = "",required = false) String sortType,
                           Model model,
@@ -30,7 +34,13 @@ public class BoardSortController {
                           @PageableDefault Pageable pageable){
 
         try {
-            Member loginMember = (Member) session.getAttribute("loginMember");
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication.getPrincipal() instanceof User){
+                User user = (User) authentication.getPrincipal();
+                Member member = memberService.findByLoginId(user.getUsername());
+                model.addAttribute("loginMember",member);
+            }
 
             Page<Board> boards = boardService.TypeSort(sortType, pageable);
             List<Board> content = boards.getContent();
@@ -48,8 +58,6 @@ public class BoardSortController {
             model.addAttribute("sortBoardList", content);
             model.addAttribute("page", boards);
             model.addAttribute("sortBoard", sortType);
-            model.addAttribute("loginMember", loginMember);
-
             return "board/sortBoard";
         }catch (BoardException e){
             e.printStackTrace();
@@ -59,7 +67,4 @@ public class BoardSortController {
             return "redirect:/error-500";
         }
     }
-
-
-
 }

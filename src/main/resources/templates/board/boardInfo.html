@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="fragments/header :: header"></head>
 
 <body>
@@ -7,7 +8,8 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script th:inline="javascript">
   var loginverfiy = false;
-
+  var csrfToken = /*[[${_csrf.token}]]*/ '';
+  var csrfHeader = /*[[${_csrf.headerName}]]*/ '';
 
   $(document).ready(function () {
     var loginElement = document.getElementById('loginMember_username');
@@ -36,10 +38,13 @@
           }
         }
         $.ajax({
-          url:"/delete",
+          url:"/api/delete",
           method : "delete",
           contentType : "application/json",
           data : JSON.stringify(dto),
+          beforeSend : function (xhr){
+            xhr.setRequestHeader(csrfHeader,csrfToken);
+          },
           success : function (response){
             alert("삭제성공");
             window.location.href="/board";
@@ -81,10 +86,13 @@
       };
 
       $.ajax({
-        url: "/board/comment",
+        url: "/api/board/comment",
         method: "post",
         contentType: "application/json",
         data: JSON.stringify(dto),
+        beforeSend : function (xhr){
+          xhr.setRequestHeader(csrfHeader,csrfToken);
+        },
         success: function (response) {
           location.reload();
         },
@@ -101,6 +109,7 @@
   function deleteComment(commentId){
     const comment_id = commentId;
     var login = document.getElementById('loginMember_username');
+    const boardId = document.getElementById('input_id').value;
 
     if (login !== null){
       login = login.value;
@@ -113,16 +122,21 @@
       if (commentConfirm) {
         var dto = {
           "id": comment_id,
+          "boardDto" :{
+            "id" : boardId
+          },
           "memberDto": {
             "username": login
           }
         }
         $.ajax({
-          url: "/delete/comment",
+          url: "/api/delete/comment",
           method: "delete",
           contentType: "application/json",
           data: JSON.stringify(dto),
-
+          beforeSend : function (xhr){
+            xhr.setRequestHeader(csrfHeader,csrfToken);
+          },
           success: function (res) {
             alert("삭제성성공");
             location.reload();
@@ -176,10 +190,13 @@
     }
 
     $.ajax({
-      url: "/board/likes",
+      url: "/api/board/likes",
       method: "post",
       contentType : "application/json",
       data : JSON.stringify(dto),
+      beforeSend : function (xhr){
+        xhr.setRequestHeader(csrfHeader,csrfToken);
+      },
       success : function (response){
         location.reload();
       },
@@ -211,10 +228,13 @@
     }
 
       $.ajax({
-        url : "/password/verify",
+        url : "/api/password/verify",
         method : "post",
         contentType : "application/json",
         data : JSON.stringify(dto),
+        beforeSend : function (xhr){
+          xhr.setRequestHeader(csrfHeader,csrfToken);
+        },
         success : function (response){
           if (response === 1){
             alert("비밀번호 검증 성공");
@@ -277,10 +297,13 @@
     }
 
     $.ajax({
-      url : "/board/update",
+      url : "/api/board/update",
       method : "post",
       contentType : "application/json",
       data : JSON.stringify(CommentDto),
+      beforeSend : function (xhr){
+        xhr.setRequestHeader(csrfHeader,csrfToken);
+      },
       success:function (response){
         alert("댓글 수정 성공")
         closeCommentModal();
@@ -304,23 +327,28 @@
     <a class="navbar-brand" href="#" th:href="@{/}">CRUD 게시판</a>
     <div class="collapse navbar-collapse" id="navbarNavDropdown">
       <ul class="navbar-nav">
-        <div th:if="${loginMember != null}" class="d-flex justify-content-between">
-          <div class="nav-item">
-            <a class="nav-link active" aria-current="page" th:text="'사용자: '+${loginMember.username}">Home</a>
-          </div>
-          <div class="nav-item">
-            <form th:action="@{/logout}" method="post">
-              <button type="submit" class="btn btn-link">로그아웃</button>
-            </form>
+        <div sec:authorize="isAuthenticated()">
+          <input  type="hidden" id="loginMember_username" th:value="${member.username}">
+          <div class="d-flex justify-content-between">
+            <div class="nav-item">
+              <a class="nav-link active" aria-current="page" th:text="'사용자: '+${member.username}">Home</a>
+            </div>
+            <div class="nav-item">
+              <form th:action="@{/logout}" method="post">
+                <button type="submit" class="btn btn-link">로그아웃</button>
+              </form>
+            </div>
           </div>
         </div>
-        <div th:if="${loginMember==null}"  class="d-flex justify-content-between">
-          <li class="nav-item" >
-            <a class="nav-link active" aria-current="page" th:href="@{/login}">로그인</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" th:href="@{/createMember}">회원가입</a>
-          </li>
+        <div sec:authorize="!isAuthenticated()">
+          <div class="d-flex justify-content-between">
+            <li class="nav-item" >
+              <a class="nav-link active" aria-current="page" th:href="@{/login}">로그인</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" th:href="@{/createMember}">회원가입</a>
+            </li>
+          </div>
         </div>
       </ul>
     </div>
@@ -444,7 +472,7 @@
 
   <input type="hidden" id="input_id" th:value="*{id}">
 
-  <input  th:if="${loginMember != null}" type="hidden" id="loginMember_username" th:value="${loginMember.username}">
+
 
 
 

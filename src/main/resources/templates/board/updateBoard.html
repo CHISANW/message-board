@@ -4,7 +4,8 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script th:inline="javascript">
-
+    var csrfToken = /*[[${_csrf.token}]]*/ '';
+    var csrfHeader = /*[[${_csrf.headerName}]]*/ '';
   function updateBoard(){
     const title = document.getElementById('title_input').value;
     const content = document.getElementById('content_input').value;
@@ -17,10 +18,13 @@
     }
 
     $.ajax({
-      url : "/board/update",
+      url : "/api/board/update",
       method : "put",
       contentType :"application/json",
       data : JSON.stringify(boardDto),
+        beforeSend : function (xhr){
+            xhr.setRequestHeader(csrfHeader,csrfToken);
+        },
       success : function (response){
         alert("변경성공");
         window.location.href="/board";

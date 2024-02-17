@@ -12,12 +12,16 @@ import messageboard.event.ViewsEvent;
 import messageboard.service.BardLikeService;
 import messageboard.service.BoardService;
 import messageboard.service.CommentService;
+import messageboard.service.MemberService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -39,13 +43,15 @@ public class BoardController {
     private final CommentService commentService;
     private final ApplicationEventPublisher eventPublisher;
     private final BardLikeService boardLikeService;
+    private final MemberService memberService;
 
     @GetMapping("/board")
     public String board(Model model, @PageableDefault(size = 10) Pageable pageable,@RequestParam(required = false, defaultValue = "") String title,HttpSession session){
+        loginCheck(model);
+
         Page<Board> boards = boardService.search(title, pageable);
         List<Board> boardAll = boards.getContent();
 
-        getSession(model, session);
 
         int currentPage = boards.getPageable().getPageNumber() + 1; // 현재 페이지 (0부터 시작하는 인덱스를 1로 변환)
         int totalPages = boards.getTotalPages(); // 전체 페이지 수
@@ -66,15 +72,15 @@ public class BoardController {
         return "board/board";
     }
 
+
+
     @GetMapping("/boardWrit")
     public String write(Model model, HttpSession session){
-        getSession(model, session);
+        loginCheck(model);
         model.addAttribute("board",new BoardDto());
         return "board/wirteboard";
     }
-
-
-    @PostMapping("/boardWrit")
+    @PostMapping("/api/boardWrit")
     @ResponseBody
     public ResponseEntity<?> writing(@Valid @RequestBody BoardDto boardDto, BindingResult result){
         try {
@@ -103,9 +109,9 @@ public class BoardController {
 
             List<Comment> allComment = commentService.findAllComment(boardId);      //조회수 값조회
 
-            Member loginMember = getSession(model, session);
+        Member loginMember = loginCheck(model);
 
-            boolean boardCheck = false;
+        boolean boardCheck = false;
 
             if (loginMember != null) {
                 boardCheck = boardLikeService.isBoardCheck(loginMember, boardId);
@@ -120,7 +126,7 @@ public class BoardController {
 
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping("/api/delete")
     @ResponseBody
     public ResponseEntity<?> boardDelete(@RequestBody BoardDto boardDto){
         try{
@@ -149,7 +155,7 @@ public class BoardController {
         Board byBoardId = boardService.findByBoardId(id);
 
         String board_write_user = byBoardId.getMember().getUsername();
-        Member loginMember = getSession(model, session);
+        Member loginMember = loginCheck(model);
         if (loginMember.getUsername().equals(board_write_user)) {
             model.addAttribute("board",byBoardId);
         }else
@@ -158,7 +164,7 @@ public class BoardController {
         return "board/updateBoard";
     }
 
-    @PutMapping("/board/update")
+    @PutMapping("/api/board/update")
     @ResponseBody
     public ResponseEntity<?> updateBoardAfter(@RequestBody BoardDto boardDto){
         try{
@@ -169,7 +175,7 @@ public class BoardController {
         }
     }
 
-    @PostMapping("/board/likes")
+    @PostMapping("/api/board/likes")
     @ResponseBody
     public ResponseEntity<?> boardLikes(@RequestBody BoardDto boardDto){
         try{
@@ -181,7 +187,7 @@ public class BoardController {
         }
     }
 
-    @PostMapping("/password/verify")
+    @PostMapping("/api/password/verify")
     @ResponseBody
     public ResponseEntity<?> verifyPassword(@RequestBody BoardDto boardDto){
         try {
@@ -208,12 +214,17 @@ public class BoardController {
             throw new NotFindPage_RestException("해당 게시물이 더이상 존재하지 않습니다.");
         }
     }
-    private static Member getSession(Model model, HttpSession session) {      //로그인한 사용자 가져오기
-        Member loginMember = (Member) session.getAttribute("loginMember");
+    private Member loginCheck(Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-            model.addAttribute("loginMember", loginMember);
+        Member member =null;
 
-        return loginMember;
+        if (authentication.getPrincipal() instanceof User){
+            User user = (User) authentication.getPrincipal();
+            member = memberService.findByLoginId(user.getUsername());
+            model.addAttribute("member",member);
+        }
+
+        return member;
     }
-
 }

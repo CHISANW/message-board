@@ -22,17 +22,5 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     Page<Board> findAllByOrderByDateTimeDesc(Pageable pageable);
 
     Page<Board> findAllByOrderByBoardLikeDesc(Pageable pageable);
-
-    @Query("SELECT b.Id from Board b order by b.boardLike desc ")
-    List<Long> likeSon();
-
-    @Query("SELECT b.Id from Board b order by b.views desc ")
-    List<Long> manyViewDesc();
-
-    @Query("SELECT b.Id from Board b order by b.count desc ")
-    List<Long> manyCommentDesc();
-
-    @Query("SELECT b.Id from Board b order by b.dateTime desc ")
-    List<Long> lastBoard();
 }
 

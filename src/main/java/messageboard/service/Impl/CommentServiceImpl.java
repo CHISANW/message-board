@@ -63,6 +63,7 @@ public class CommentServiceImpl implements CommentService {
     public void deleteComment(CommentDto commentDto){
         String dtoUsername = commentDto.getMemberDto().getUsername();
         String username = memberService.findByUsername(dtoUsername).getUsername();  //로그인한 사용자 이름
+        Long boardId = commentDto.getBoardDto().getId();
 
 
         Long commentDtoId = commentDto.getId();
@@ -70,6 +71,9 @@ public class CommentServiceImpl implements CommentService {
         if (byId.isPresent()){
             Long commentId = byId.get().getId();
             String commentWriter = byId.get().getMember().getUsername();
+            Board byBoardId = boardService.findByBoardId(boardId);
+            byBoardId.setCount(byBoardId.getCount()-1);
+            boardService.entitySave(byBoardId);
 
             if (username != commentWriter){
                 throw new CommentException("댓글 지우기 로직 오류");

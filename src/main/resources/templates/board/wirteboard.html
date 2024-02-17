@@ -1,9 +1,12 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+ xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="fragments/header :: header"></head>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script th:inline="javascript">
+  var csrfToken = /*[[${_csrf.token}]]*/ '';
+  var csrfHeader = /*[[${_csrf.headerName}]]*/ '';
 
   function writeboard(){
     const title = document.getElementById('title_input').value;
@@ -21,10 +24,13 @@
     }
 
     $.ajax({
-      url :"boardWrit",
+      url :"/api/boardWrit",
       method : "post",
       contentType : "application/json",
       data: JSON.stringify(boardDto),
+      beforeSend : function (xhr){
+        xhr.setRequestHeader(csrfHeader,csrfToken);
+      },
       success :function (response){
         window.location.href="/board"
       },
@@ -54,7 +60,7 @@
           <tr>
             <th><label th:for="writer">작성자</label></th>
             <td>
-              <input class="form-control" id="writer_input" type="text" th:value="${loginMember.username}" readonly></td>
+              <input class="form-control" id="writer_input" type="text" th:value="${member.username}" readonly></td>
           </tr>
           <tr>
             <th><label th:for="title">제목</label></th>

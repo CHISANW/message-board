@@ -10,4 +10,6 @@ public interface MemberService {
     Member saveDto(MemberDto memberDto);
 
     Member findByUsername(String username);
+
+    Member findByLoginId(String loginId);
 }

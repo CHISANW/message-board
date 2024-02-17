@@ -1,6 +1,10 @@
 package messageboard.interceptor;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.MethodParameter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -8,6 +12,8 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.DispatcherType;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.UUID;
 
 @Slf4j
@@ -17,16 +23,22 @@ public class LogInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String requestURI = request.getRequestURI();
-        String uuid = UUID.randomUUID().toString().substring(0,5);
 
-        request.setAttribute(LOG_ID,uuid);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String name;
 
-        //핸들러 정보 출력
-        if (handler instanceof HandlerMethod){
-            HandlerMethod hm = (HandlerMethod) handler;
+        if (authentication != null &&authentication.getPrincipal()instanceof User){
+            name= authentication.getName();
+        }else {
+            name="Non-user/"+UUID.randomUUID().toString().substring(0,4);
         }
 
-        log.info("요청 [{}] [{}] [{}] [{}]",uuid,requestURI, request.getDispatcherType(),handler);
+        request.setAttribute(LOG_ID,name);
+
+        if (handler instanceof HandlerMethod) {
+        }
+
+        log.info("요청 [{}] [{}] [{}] [{}]",name,requestURI, request.getDispatcherType(),handler);
         return true;
     }
 

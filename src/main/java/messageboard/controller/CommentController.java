@@ -7,6 +7,7 @@ import messageboard.Exception.*;
 import messageboard.entity.Comment;
 import messageboard.service.CommentService;
 
+import messageboard.service.MemberService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,7 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @DeleteMapping("/delete/comment")
+    @DeleteMapping("/api/delete/comment")
     public ResponseEntity<?> deleteComment(@RequestBody CommentDto commentDto){
         try {
             commentService.deleteComment(commentDto);
@@ -32,7 +33,7 @@ public class CommentController {
         }
     }
 
-    @PostMapping("/board/comment")
+    @PostMapping("/api/board/comment")
     @ResponseBody
     public ResponseEntity<?> comment(@RequestBody CommentDto commentDto){
         try{
@@ -45,7 +46,7 @@ public class CommentController {
         }
     }
 
-    @PostMapping("/board/update")
+    @PostMapping("/api/board/update")
     public ResponseEntity<?> updateComment(@RequestBody CommentDto commentDto){
         try {
             commentService.updateComment(commentDto);

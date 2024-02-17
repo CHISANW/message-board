@@ -1,0 +1,56 @@
+package messageboard.config;
+
+import lombok.RequiredArgsConstructor;
+import messageboard.handler.security.CustomAuthenticationFailHandler;
+import messageboard.handler.security.CustomAuthenticationSuccessHandler;
+import messageboard.handler.security.CustomOauthLogoutHandler;
+import messageboard.repository.MemberRepository;
+import messageboard.service.security.CustomUserDetailService;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+
+@Configuration
+@RequiredArgsConstructor
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    private final CustomAuthenticationFailHandler customAuthenticationFailHandler;
+    private final CustomOauthLogoutHandler customOauthLogoutHandler;
+    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private final MemberRepository memberRepository;
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.authorizeRequests()
+                .antMatchers("/login","/" ,"/createMember","/board","/board/*").permitAll().anyRequest().authenticated()
+                .and()
+                .formLogin().loginPage("/login")
+                .failureHandler(customAuthenticationFailHandler).successHandler(customAuthenticationSuccessHandler).loginProcessingUrl("/login")
+                .and()
+                .logout().logoutUrl("/logout").logoutSuccessHandler(customOauthLogoutHandler);
+
+
+        http.cors().and().csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+    }
+
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring().antMatchers("/img/**","/css/**");
+    }
+
+
+
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+    @Bean
+    public UserDetailsService userDetailsService(){
+        return new CustomUserDetailService(memberRepository);
+    }
+}

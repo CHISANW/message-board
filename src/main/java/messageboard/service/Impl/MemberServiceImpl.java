@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.LoginDto;
 import messageboard.Dto.MemberDto;
+import messageboard.Exception.BadRequestException;
 import messageboard.entity.Member;
 import messageboard.repository.MemberRepository;
 import messageboard.service.MemberService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
     @Override
     public Member saveEntity(Member member) {
         return memberRepository.save(member);
@@ -26,7 +29,8 @@ public class MemberServiceImpl implements MemberService {
     public Member saveDto(MemberDto memberDto) {
         Member member = Member.builder()
                 .username(memberDto.getUsername())
-                .password(memberDto.getPassword())
+                .loginId(memberDto.getLoginId())
+                .password(passwordEncoder.encode(memberDto.getPassword()))
                 .build();
         return saveEntity(member);
     }
@@ -36,16 +40,26 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.findByUsername(username);
     }
 
-
-    public boolean login(LoginDto loginDto){                //로그인 구현
-        String username = loginDto.getUsername();
-        String password = loginDto.getPassword();
-        Member byUsername = memberRepository.findByUsername(username);
-        if(byUsername!=null) {
-            if (byUsername.getPassword().equals(password)) {
-                return true;
-            }
+    @Override
+    public Member findByLoginId(String loginId) {
+        Member byLoginId = memberRepository.findByLoginId(loginId);
+        if (byLoginId==null){
+            throw new BadRequestException("Not found User= "+loginId);
         }
-        return false;
+
+        return byLoginId;
     }
+
+
+//    public boolean login(LoginDto loginDto){                //로그인 구현
+//        String username = loginDto.getUsername();
+//        String password = loginDto.getPassword();
+//        Member byUsername = memberRepository.findByUsername(username);
+//        if(byUsername!=null) {
+//            if (byUsername.getPassword().equals(password)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 }
