@@ -1,6 +1,6 @@
 package messageboard.service;
 
-import messageboard.entity.Member;
+import messageboard.entity.member.Member;
 
 public interface BardLikeService {
 

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Exception.BoardException;
 import messageboard.entity.Board;
-import messageboard.entity.Member;
+import messageboard.entity.member.Member;
 import messageboard.service.BoardSortService;
 import messageboard.service.MemberService;
 import org.springframework.data.domain.Page;

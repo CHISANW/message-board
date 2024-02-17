@@ -1,14 +1,11 @@
 package messageboard.service.security;
 
 import lombok.RequiredArgsConstructor;
-import messageboard.Exception.Login_RestException;
-import messageboard.entity.Member;
+import messageboard.entity.member.Member;
 import messageboard.repository.MemberRepository;
-import messageboard.service.MemberService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @RequiredArgsConstructor
 public class CustomUserDetailService implements UserDetailsService {
@@ -21,6 +18,7 @@ public class CustomUserDetailService implements UserDetailsService {
             return User.builder()
                     .username(byLoginId.getLoginId())
                     .password(byLoginId.getPassword())
+                    .disabled(!byLoginId.isVerified())
                     .authorities("ROLE_USER").build();
 
     }

@@ -1,7 +1,7 @@
 package messageboard.service;
 
 import messageboard.Dto.MemberDto;
-import messageboard.entity.Member;
+import messageboard.entity.member.Member;
 
 public interface MemberService {
 

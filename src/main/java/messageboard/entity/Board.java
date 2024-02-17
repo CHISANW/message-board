@@ -2,6 +2,7 @@ package messageboard.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import messageboard.entity.member.Member;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

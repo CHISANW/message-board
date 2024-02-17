@@ -3,27 +3,22 @@ package messageboard.service.Impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.BoardDto;
-import messageboard.Exception.BoardException;
 import messageboard.Exception.Login_RestException;
 import messageboard.Exception.NotFindPageException;
 import messageboard.entity.Board;
 import messageboard.entity.Board_Like_check;
-import messageboard.entity.Member;
+import messageboard.entity.member.Member;
 import messageboard.repository.BoardLIkeRepository;
 import messageboard.repository.BoardRepository;
 import messageboard.repository.CommentRepository;
 import messageboard.service.BoardService;
-import messageboard.service.BoardSortService;
 import messageboard.service.MemberService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Service

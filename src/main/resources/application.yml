@@ -15,6 +15,24 @@ spring:
   profiles:
     default: local
 
+  mail:
+    host: smtp.naver.com
+    username: wlwhsrjaeka
+    password: zxc45SDW!@
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          debug: true
+          ssl:
+            trust: smtp.naver.com
+            enable: true
+
+
   devtools:
     livereload:
       enabled: true

@@ -26,9 +26,11 @@
 <div class="container-fluid ps-md-0">
   <div class="login">
     <div class="container align-content-center"> <!-- 이 부분에 text-center 클래스를 추가하여 로그인 폼을 가운데로 정렬합니다. -->
-<!--      <div th:if="${error}" class="alert alert-danger" role="alert">-->
-<!--        <p th:text="${error}" style="text-align: center"></p>-->
-<!--      </div>-->
+      <div>
+        <div th:if="${loginError}" class="alert alert-danger">아이디 또는 비밀번호가 일치하지 않습니다.</div>
+        <div th:if="${loginVerified}" class="alert alert-success">이메일 인증이 성공했습니다.</div>
+        <div th:if="${loginDisabled}" class="alert alert-warning">이메일 인증부터 하세요</div>
+      </div>
       <div class="col-md-9 col-lg-8 mx-auto">
         <a href="/" style="text-decoration: none; color: #0D0D0D;">
           <h1 class="text-center">로그인</h1>

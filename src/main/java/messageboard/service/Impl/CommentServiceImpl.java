@@ -7,7 +7,7 @@ import messageboard.Exception.CommentException;
 import messageboard.Exception.Login_RestException;
 import messageboard.entity.Board;
 import messageboard.entity.Comment;
-import messageboard.entity.Member;
+import messageboard.entity.member.Member;
 import messageboard.repository.CommentRepository;
 import messageboard.service.CommentService;
 import messageboard.service.MemberService;

@@ -1,7 +1,9 @@
-package messageboard.entity;
+package messageboard.entity.member;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import messageboard.entity.Board;
+import messageboard.entity.Comment;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -22,6 +24,20 @@ public class Member {
     private String loginId;
 
     private String password;
+
+    private String email;
+
+    //생년월일
+    private int year;
+
+    private int month;
+
+    private int day;
+
+    private String phoneNumber;
+
+    private boolean verified;
+
 
 
     @JsonIgnore

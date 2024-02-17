@@ -4,8 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.BoardDto;
 import messageboard.Dto.MemberDto;
 import messageboard.entity.Board;
-import messageboard.entity.Member;
-import org.assertj.core.api.Assertions;
+import messageboard.entity.member.Member;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,7 +14,6 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(properties =  {"spring.config.location=classpath:application-test.yml"})
 @Transactional
@@ -40,7 +38,6 @@ class BoardLikeServiceImplTest {
         Member member = memberService.saveDto(memberDto);
 
         MemberDto memberDot1 = new MemberDto();
-        memberDot1.setId(member.getId());
         memberDot1.setUsername("123");
         memberDot1.setPassword("123");
 

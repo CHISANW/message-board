@@ -73,8 +73,8 @@ class CommentServiceImplTest {
 
         Long id = commentSave.getId();
         log.info("id={}",id.getClass());
-        Long boardId = commentRepository.findBoardId(id);
-        log.info("boardId={}",boardId);
+//        Long boardId = commentRepository.findBoardId(id);
+//        log.info("boardId={}",boardId);
     }
 
 }

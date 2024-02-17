@@ -2,7 +2,7 @@ package messageboard.service.Impl;
 
 import lombok.RequiredArgsConstructor;
 import messageboard.entity.Board_Like_check;
-import messageboard.entity.Member;
+import messageboard.entity.member.Member;
 import messageboard.repository.BoardLIkeRepository;
 import messageboard.service.BardLikeService;
 import org.springframework.stereotype.Service;

@@ -7,7 +7,7 @@ import messageboard.Dto.CommentDto;
 import messageboard.Exception.*;
 import messageboard.entity.Board;
 import messageboard.entity.Comment;
-import messageboard.entity.Member;
+import messageboard.entity.member.Member;
 import messageboard.event.ViewsEvent;
 import messageboard.service.BardLikeService;
 import messageboard.service.BoardService;
