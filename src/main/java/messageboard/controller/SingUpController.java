@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerErrorException;
 
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 public class SingUpController {
@@ -16,13 +18,34 @@ public class SingUpController {
 
     private final MemberServiceImpl singUpService;
 
-    @PostMapping("/duplicate/loginId")
-    public ResponseEntity<?> duplicateLoginId(@RequestBody MemberDto memberDto){
+    @PostMapping("/check/loginId")
+    public ResponseEntity<?> checkLoginId(@RequestBody MemberDto memberDto){
         try{
-           return singUpService.duplicateLoginId(memberDto);
+           return singUpService.LoginIdVaild(memberDto);
         }catch (Exception e){
             e.printStackTrace();
             throw new ServerErrorException("서버오류발생");
+        }
+    }
+
+    @PostMapping("/duplicate/password")
+    public ResponseEntity<Map<String,Boolean>> duplicatePassword(@RequestBody MemberDto memberDto){
+        try{
+            return singUpService.duplicatePassword(memberDto);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new ServerErrorException("서버오류발생");
+        }
+    }
+
+
+    @PostMapping("/Strength/password")
+    public ResponseEntity<Map<String,Boolean>> passwordStrength(@RequestBody MemberDto memberDto){
+        try{
+            return singUpService.checkPasswordStrength(memberDto);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new ServerErrorException("오류발생");
         }
     }
 }

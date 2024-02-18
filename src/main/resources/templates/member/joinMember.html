@@ -3,20 +3,24 @@
 <!--<head th:replace="fragments/header :: header">-->
 <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 
 <script th:inline="javascript">
 
     var csrfToken = /*[[${_csrf.token}]]*/ '';
     var csrfHeader = /*[[${_csrf.headerName}]]*/ '';
+
+    var singUp = false;
     function checkDuplicateId(){
+
         const loginId = document.getElementById('loginId').value;
 
         var dto = {
             "loginId" :loginId
         }
         $.ajax({
-            url: "/duplicate/loginId",
+            url: "/check/loginId",
             method: "post",
             contentType : "application/json",
             data : JSON.stringify(dto),
@@ -24,13 +28,13 @@
                 xhr.setRequestHeader(csrfHeader,csrfToken);
             },
             success : function (response){
-                console.log(response)
                 var useLoginId = response.use_loginId;
                 console.log(useLoginId);
                 if (useLoginId===true){
                     $('#loginIdError').html("<span>사용가능한 아이디입니다.</span>").css({"color" : "#0a53be"})
+                    singUp = true;
                 }else if (useLoginId===false) {
-                    $('#loginIdError').html("<span>중복된 아이디입니다.</span>").css({"color": "#FA3E3E"})
+                    $('#loginIdError').html("<span>사용 불가능한 아이디입니다.</span>").css({"color": "#FA3E3E"})
                 }
                 if (loginId===""){
                     $('#loginIdError').html("");
@@ -40,7 +44,110 @@
             error : function (xhr){
                 alert(xhr.responseText);
             }
-        })
+        });
+    }
+
+    function checkMatchPwd(){
+        const password = document.getElementById('password').value;
+        const passwordRe = document.getElementById('passwordRe').value;
+
+        var Dto={
+            "password" :password,
+            "passwordRe" : passwordRe
+        }
+
+        $.ajax({
+            url: "/duplicate/password",
+            method: "post",
+            contentType : "application/json",
+            data: JSON.stringify(Dto),
+            beforeSend : function (xhr){
+                xhr.setRequestHeader(csrfHeader,csrfToken);
+            },
+            success : function (response){
+                var duplicatePassword = response.duplicate_password;
+                var passwordStrength =response.PasswordStrength;
+
+                if (duplicatePassword===true){
+                    $('#passwordErrorRe').html("<span>비밀번호 일치</span>").css({"color" : "#0a53be"});
+                    singUp=true;
+                }else if (duplicatePassword===false) {
+                    $('#passwordErrorRe').html("<span>비밀번호 불일치</span>").css({"color": "#FA3E3E"});
+                }
+
+                if (passwordRe===""){
+                    $('#passwordErrorRe').html("");
+                }
+            },
+            error : function (xhr){
+                var errorMessage = xhr.responseText;
+                console.log(errorMessage)
+            }
+        });
+    }
+
+    function StrengthPassword_check(){
+        const password = document.getElementById('password').value;
+
+        var dto={
+            "password" : password
+        }
+
+        $.ajax({
+            url : "/Strength/password",
+            method : "post",
+            contentType : "application/json",
+            data : JSON.stringify(dto),
+            beforeSend : function (xhr){
+                xhr.setRequestHeader(csrfHeader,csrfToken);
+            },
+            success : function (response){
+                var passwordStrength = response.passwordStrength;
+                if(passwordStrength===false) {
+                    $('#passwordError').html("<span>규칙에 맞게 다시 작성해주세요</span>").css({"color": "#FA3E3E"});
+                }else if(passwordStrength===true) {
+                    $('#passwordError').html("<span>사용가능한 비밀번호입니다.</span>").css({"color": "#0a53be"});
+                }
+                if (password===""){
+                    $('#passwordError').html("");
+                }
+            }
+
+        });
+
+    }
+
+    function sample6_execDaumPostcode() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                var addr = ''; // 주소 변수
+                var extraAddr = ''; // 참고항목 변수
+
+                if (data.userSelectedType === 'R') {
+                    addr = data.roadAddress;
+                } else {
+                    addr = data.jibunAddress;
+                }
+                if(data.userSelectedType === 'R'){
+                    if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+                        extraAddr += data.bname;
+                    }
+                    if(data.buildingName !== '' && data.apartment === 'Y'){
+                        extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                    }
+                    if(extraAddr !== ''){
+                        extraAddr = ' (' + extraAddr + ')';
+                    }
+                    document.getElementById('subAddr').value = extraAddr;
+                } else {
+                    document.getElementById('subAddr').value = '';
+                }
+
+                document.getElementById('zipcode').value = data.zonecode;
+                document.getElementById('address').value = addr;
+                document.getElementById('detailAddr').focus();
+            }
+        }).open();
     }
 </script>
 <style>
@@ -52,7 +159,12 @@
 </style>
 <body>
 <form th:action="@{/createMember}"method="post" th:object="${member}">
-    <div>
+
+    <div th:if="${#fields.hasErrors('global')}">
+        <h3>오류 안내</h3>
+        <p th:each="err : ${#fields.errors('global')}" th:text="${err}" class="error" />
+    </div>
+
         <label th:for="usernmae">이름</label>
         <input type="text" th:field="*{username}"placeholder="이름을 입력하세요" oninput="checkUsername()" autofocus>
         <div th:class="invalid-feedback" id="userError">
@@ -60,24 +172,26 @@
         </div>
     </div>
     <div class="form-group">
-        <label for="loginId" id="loginIdTxt"> 아이디</label>
+        <label for="loginId"> 아이디</label>
         <input type="text" id="loginId" name="loginId" class="form-control"placeholder="아이디" onInput="checkDuplicateId()">
+        <small> 8~16자리의 영문, 숫자만 사용해주세요.</small>
         <div class="invalid-feedback" id="loginIdError">
             <small th:class="text-danger" th:errors="*{loginId}"></small>
         </div>
     </div>
     <div>
         <label th:for="password">비밀번호</label>
-        <input type="password" th:field="*{password}" placeholder="비밃번호를 입력하세여" oninput="checkPwd()">
-        <div th:class="invalid-feedback" id="passwordError1">
+        <input type="password" th:field="*{password}" id="password" placeholder="8~16자리/영문 대소문자,숫자,특수문자 조합" oninput="StrengthPassword_check()">
+        <small> 8~16자리 영문 대소문자, 숫자, 특수문자 중 3가지 이상 조합으로 만들어주세요.</small>
+        <div th:class="invalid-feedback" id="passwordError">
             <div th:class="text-danger" th:errors="*{password}"/>
         </div>
     </div>
 
     <div>
         <label th:for="passwordRe">비밀번호 재입력</label>
-        <input type="password" th:field="*{passwordRe}" placeholder="비밀번호를 재입력해주세요" oninput="checkMatchPwd()">
-        <div class="invalid-feedback" id="passwordError">
+        <input type="password" th:field="*{passwordRe}"id="passwordRe" placeholder="비밀번호를 재입력해주세요" oninput="checkMatchPwd()"/>
+        <div class="invalid-feedback" id="passwordErrorRe">
             <small th:class="text-danger" th:errors="*{passwordRe}"></small>
         </div>
     </div>
@@ -108,18 +222,20 @@
     </div>
     <div class="from-group">
         <label th:for="address">주소</label>
-        <input type="text" th:field="*{addressDto.zipcode}" placeholder="우편번호">
-<!--        <input type="button" onClick="sample6_execDaumPostcode()" value="우편번호 찾기"/>-->
+        <input type="text" th:field="*{addressDto.zipcode}"  id="zipcode" placeholder="우편번호" readonly>
+        <input type="button" onClick="sample6_execDaumPostcode()" value="우편번호 찾기">
+        <br/>
 <!--        <div class="invalid-feedback" th:if="${#fields.hasErrors('address')}">-->
 <!--            <small th:class="text-danger" th:errors="*{addressDto.address}"></small>-->
 <!--        </div>-->
-        <input type="text" th:field="*{addressDto.address}" placeholder="주소"><br>
-        <input type="text" th:field="*{addressDto.detailAddr}" placeholder="상세주소">
-        <input type="text" th:field="*{addressDto.subAddr}" placeholder="참고항목">
+        <input type="text" th:field="*{addressDto.address}" id="address" placeholder="주소" readonly>
+        <input type="text" th:field="*{addressDto.subAddr}" id="subAddr" placeholder="참고항목" readonly>
+        <br>
+        <input type="text" th:field="*{addressDto.detailAddr}" id="detailAddr" placeholder="상세주소" >
     </div>
 
 
-    <button type="submit">회원가입</button>
+    <button type="submit" >회원가입</button>
 </form>
 </body>
 </html>

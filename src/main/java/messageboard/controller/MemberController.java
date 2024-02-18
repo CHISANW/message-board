@@ -11,11 +11,15 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
+
 @Controller
 @RequiredArgsConstructor
 @Slf4j
@@ -32,16 +36,25 @@ public class MemberController {
     }
 
     @PostMapping("/createMember")
-    public String createMemberPost(@Valid @ModelAttribute("member")MemberDto memberDto, BindingResult result){
+    public String createMemberPost(@Valid @ModelAttribute("member")MemberDto memberDto, BindingResult result,Model model){
+        boolean b = memberService.VerificationOfSingUp(memberDto);
+        log.info("b={}",b);
+
+        if (!b){
+            ObjectError error = new ObjectError("globalError", "아이디및 중복검사를 해주세요");
+            result.addError(error);
+        }
+
         if (result.hasErrors()){
-            log.info("a={}",result.getFieldErrors().get(0).getDefaultMessage());
             return "member/joinMember";
         }
 
         Member member = memberService.saveDto(memberDto);
         eventPublisher.publishEvent(new MemberJoinEvent(member));
-        return "redirect:/?validate";
+        return "redirect:/";
     }
+
+
 
 
 }
