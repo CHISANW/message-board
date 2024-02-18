@@ -45,7 +45,7 @@ public class RestApiControllerAdvice {
 
     @ExceptionHandler
     public ResponseEntity<ErrorResult> serverError(ServerErrorException e){
-        log.info("[505 에러]",e);
+        log.info("[500 에러]",e);
         ErrorResult errorResult = new ErrorResult("ServerError", e.getMessage());
        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResult);
     }

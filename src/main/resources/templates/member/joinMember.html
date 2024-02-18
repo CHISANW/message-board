@@ -1,13 +1,48 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: header">
+<!--<head th:replace="fragments/header :: header">-->
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
-<style>
-    .error{
-        color: firebrick;
-    }
 
-</style>
+<script th:inline="javascript">
+
+    var csrfToken = /*[[${_csrf.token}]]*/ '';
+    var csrfHeader = /*[[${_csrf.headerName}]]*/ '';
+    function checkDuplicateId(){
+        const loginId = document.getElementById('loginId').value;
+
+        var dto = {
+            "loginId" :loginId
+        }
+        $.ajax({
+            url: "/duplicate/loginId",
+            method: "post",
+            contentType : "application/json",
+            data : JSON.stringify(dto),
+            beforeSend : function (xhr){
+                xhr.setRequestHeader(csrfHeader,csrfToken);
+            },
+            success : function (response){
+                console.log(response)
+                var useLoginId = response.use_loginId;
+                console.log(useLoginId);
+                if (useLoginId===true){
+                    $('#loginIdError').html("<span>사용가능한 아이디입니다.</span>").css({"color" : "#0a53be"})
+                }else if (useLoginId===false) {
+                    $('#loginIdError').html("<span>중복된 아이디입니다.</span>").css({"color": "#FA3E3E"})
+                }
+                if (loginId===""){
+                    $('#loginIdError').html("");
+                }
+
+            },
+            error : function (xhr){
+                alert(xhr.responseText);
+            }
+        })
+    }
+</script>
 <style>
     .invalid-feedback{
         color: #FA3E3E;
@@ -35,7 +70,7 @@
         <label th:for="password">비밀번호</label>
         <input type="password" th:field="*{password}" placeholder="비밃번호를 입력하세여" oninput="checkPwd()">
         <div th:class="invalid-feedback" id="passwordError1">
-            <small th:class="text-danger" th:errors="*{password}"/>
+            <div th:class="text-danger" th:errors="*{password}"/>
         </div>
     </div>
 

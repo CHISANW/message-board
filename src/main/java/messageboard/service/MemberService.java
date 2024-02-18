@@ -2,6 +2,8 @@ package messageboard.service;
 
 import messageboard.Dto.MemberDto;
 import messageboard.entity.member.Member;
+import org.springframework.stereotype.Service;
+
 
 public interface MemberService {
 
