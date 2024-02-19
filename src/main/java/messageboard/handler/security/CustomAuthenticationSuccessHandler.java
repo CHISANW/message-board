@@ -31,6 +31,10 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         String referer = (String) request.getSession().getAttribute("referer");
+        log.info("referer={}",referer);
+        if (referer.equals("http://localhost:8080/login-emailVerified")){
+            defaultRedirectStrategy.sendRedirect(request,response,"/");
+        }else
         defaultRedirectStrategy.sendRedirect(request,response,referer);
     }
 }

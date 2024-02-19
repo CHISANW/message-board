@@ -9,7 +9,6 @@ import messageboard.entity.member.Member;
 import messageboard.repository.AddressRepository;
 import messageboard.repository.MemberRepository;
 import messageboard.service.MemberService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,14 +20,13 @@ import java.util.regex.Pattern;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final AddressRepository addressRepository;
     private final PasswordEncoder passwordEncoder;
-
 
     @Override
     public Member saveEntity(Member member) {
@@ -36,12 +34,13 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
-     * 회원가입시 입력값을 저장하며, 이메일인증을통해 회원가입을 실시하게 되므로 verified의 기존값은 false로 설정하여 가입한다.
-     * @param memberDto 회원가입시 필요한 정보를 담은 Dto
-     * @return 사용자 정보를 db에 저장
+     * 회원 정보를 저장하고 데이터베이스에 저장된 사용자 정보를 반환합니다.
+     * @param memberDto 저장할 회원 정보를 포함하는 Dto
+     * @return 데이터베이스에 저장된 회원 정보
      */
     @Override
     public Member saveDto(MemberDto memberDto) {
+        // 회원 정보를 생성하여 데이터베이스에 저장합니다.
         Member member = Member.builder()
                 .username(memberDto.getUsername())
                 .loginId(memberDto.getLoginId())
@@ -58,7 +57,8 @@ public class MemberServiceImpl implements MemberService {
                 .address(memberDto.getAddressDto().getAddress())
                 .detailAddr(memberDto.getAddressDto().getDetailAddr())
                 .subAddr(memberDto.getAddressDto().getSubAddr())
-                .member(member).build();
+                .member(member)
+                .build();
 
         addressRepository.save(address);
         return saveEntity(member);
@@ -69,35 +69,32 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.findByUsername(username);
     }
 
+
     @Override
     public Member findByLoginId(String loginId) {
+        // 로그인 ID에 해당하는 사용자를 조회하고, 사용자가 존재하지 않을 경우 BadRequestException을 발생시킵니다.
         Member byLoginId = memberRepository.findByLoginId(loginId);
-        if (byLoginId==null){
-            throw new BadRequestException("Not found User= "+loginId);
+        if (byLoginId == null) {
+            throw new BadRequestException("Not found User= " + loginId);
         }
-
         return byLoginId;
     }
 
+
+
     /**
-     * 회원가입시 AJAX를 사용한 아이디 중복검사 및 아이디 조건체크
+     * 회원가입시 AJAX를 사용한 아이디 중복검사 및 아이디 조건체크(대소문자 구문)
      * @param memberDto 회원가입시 정보
      * @return  아이디가 이미 사용 중이거나 조건이 불충분하면 false를 반환하고, 모두 만족시 true를 반환합니다
      */
-    public ResponseEntity<Map<String, Boolean>> LoginIdVaild(MemberDto memberDto){
-        Map<String,Boolean> result = new LinkedHashMap<>();
-        boolean isLoginIdValid  = isLoginIdValid(memberDto);
+    public Map<String, Boolean> LoginIdValid(MemberDto memberDto) {
+        Map<String, Boolean> result = new LinkedHashMap<>();
         try {
-            Member byLoginId = memberRepository.findByLoginId(memberDto.getLoginId());
-
-            if (byLoginId!=null||!isLoginIdValid) {
-                result.put("use_loginId", false);
-            } else if (byLoginId == null && isLoginIdValid) {
-                result.put("use_loginId", true);
-            }
-
-            return ResponseEntity.ok(result);
-        }catch (Exception e){
+            boolean isLoginIdValid = isLoginIdValid(memberDto);
+            Member member = memberRepository.findByCaseSensitiveLoginId(memberDto.getLoginId());
+            result.put("use_loginId", member==null && isLoginIdValid);
+            return result;
+        } catch (Exception e) {
             e.printStackTrace();
             throw new ServerErrorException("오류");
         }
@@ -113,68 +110,129 @@ public class MemberServiceImpl implements MemberService {
         return Pattern.compile("^[a-zA-Z0-9]{8,16}$").matcher(loginId).find();
     }
 
-
     /**
-     *해당 메소드는 주어진 넘어온 Dto를 통해서 비밀번호 중복여부를 체크하고, 비밀번호가 일치하는지 확인 및 반환
+     * 주어진 회원 정보를 통해 비밀번호 중복여부를 체크하고, 결과를 반환합니다.
      * @param memberDto 회원 정보를 담은 Dto
      * @return 비밀번호 일치여부를 Map<String,Boolean>타입으로 반환
      */
-    public ResponseEntity<Map<String,Boolean>> duplicatePassword(MemberDto memberDto){
-        Map<String,Boolean> result = new LinkedHashMap<>();
-        String password = memberDto.getPassword();          //첫번쩨 비밀번호
-        String passwordRe = memberDto.getPasswordRe();      //두번째 비밀번호 비밀번호
+    public Map<String, Boolean> duplicatePassword(MemberDto memberDto) {
+        Map<String, Boolean> result = new LinkedHashMap<>();
+        String password = memberDto.getPassword();          //첫번째 비밀번호
+        String passwordRe = memberDto.getPasswordRe();      //두번째 비밀번호
 
-        if (!password.equals(passwordRe)){
-            result.put("duplicate_password",false);
-        }else {
-            result.put("duplicate_password", true);
-        }
-
-        return ResponseEntity.ok(result);
+        result.put("duplicate_password", password.equals(passwordRe));
+        return result;
     }
 
-
     /**
-     * 회원가입시 아이디중복검사, 비밀번호 중복검사를 하지않았을때 회원가입을 못함.
+     * 회원가입시 모든 조건검사를 하지 않았을때 회원가입을 하지 못함.
      * @param memberDto 회원가입의 정보
      * @return  모두 사용시 true, 하나라도 검사 안했을시 false
      */
-    public boolean VerificationOfSingUp(MemberDto memberDto){
-        String loginId = memberDto.getLoginId();
-        Member byLoginId = memberRepository.findByLoginId(loginId);
+    public boolean ValidationOfSignUp(MemberDto memberDto) {
+        Map<String, Boolean> validationResult = validateSignUp(memberDto);
 
-        String password = memberDto.getPassword();
-        String passwordRe = memberDto.getPasswordRe();
-
-        if (byLoginId!=null||!password.equals(passwordRe)){
-            return false;
+        for (Map.Entry<String, Boolean> entry : validationResult.entrySet()) {
+            if (!entry.getValue()) {
+                log.error("Failed validation: {}", entry.getKey());
+                return false;
+            }
         }
         return true;
     }
-
 
     /**
      * 강력한 비밀번호인지 확인 "특수문자","0~9","소문자","대문자","8자리이상" 포함 여부 확인
      * @param memberDto 회원가입시 사용자정보
      * @return 강력한 비밀번호시 true, 아닐시 false 반환
      */
-    public ResponseEntity<Map<String,Boolean>> checkPasswordStrength(MemberDto memberDto){
+    public Map<String, Boolean> checkPasswordStrength(MemberDto memberDto) {
         try {
             String password = memberDto.getPassword();
 
-            Map<String,Boolean> result = new LinkedHashMap<>();
+            Map<String, Boolean> result = new LinkedHashMap<>();
             // 특수 문자 포함 여부, 대문자 알파벳 포함 여부, 비밀번호의 길이가 8자리 이상인지를 한 번에 확인
             boolean checkStrength = Pattern.compile("^(?=.*[`~!@#$%^&*()_+])(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,16}$").matcher(password).find();
 
-            if (!checkStrength){
-                result.put("passwordStrength",false);
-            }else
-                result.put("passwordStrength",true);
-            return ResponseEntity.ok(result);
-        }catch (Exception e){
-            e.printStackTrace();
+            result.put("passwordStrength", checkStrength);
+            return result;
+        } catch (Exception e) {
             throw new RuntimeException();
         }
     }
 
+    /**
+     * 회원가입시 이름이 한국어이며 2글자 이상시에만 회원가입 가능
+     * @param memberDto 회원가입 정보
+     * @return  한국어로 작성된 이름시 true 그외 false
+     */
+    public Map<String, Boolean> userNameValid(MemberDto memberDto) {
+        try {
+            Map<String, Boolean> result = new LinkedHashMap<>();
+            String username = memberDto.getUsername();
+
+            boolean isKorean = Pattern.compile("^[가-힣]+.{1,}$").matcher(username).matches();
+            // 한국어로 작성된 이름인 경우 true, 그 외에는 false
+            result.put("isKorean", isKorean);
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+    }
+
+    /**
+     * 회원가입시 010,"-"를 제외한 8자리 번호로 회원가입
+     * @param memberDto 회원가입 정보
+     * @return 8자리일시 usePhoneNumber:true 아닐시  usePhoneNumber:false
+     */
+    public Map<String, Boolean> phoneNumberValid(MemberDto memberDto) {
+        try {
+            Map<String, Boolean> result = new LinkedHashMap<>();
+            String phoneNumber = memberDto.getPhoneNumber();
+
+            boolean valid = Pattern.compile("^\\d{8}$").matcher(phoneNumber).matches();
+            result.put("usePhoneNumber", valid);
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+    }
+
+    /**
+     * 이메일주소가 올바른 주소인지 확인
+     * @param memberDto 회원가입시의 이메일정보
+     * @return  올바른이메일 주소시 true, 아닐시 false
+     */
+    public Map<String, Boolean> emailValid(MemberDto memberDto) {
+        try {
+            Map<String, Boolean> result = new LinkedHashMap<>();
+            String email = memberDto.getEmail();
+
+            boolean valid = Pattern.compile("^[a-zA-Z0-9]+@[a-zA-Z]+\\.[a-zA-Z]{2,}$").matcher(email).matches();
+            result.put("useEmail", valid);
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+    }
+
+    /**
+     회원가입 정보를 검증하는 메서드로, 사용자가 제출한 회원가입 폼의 데이터를 기반으로 각각의 조건을 검사하여 결과를 반환.
+     반환된 결과는 각 검증 항목의 이름과 검증 결과로 이루어진 맵 형태로 제공한다.
+     @param memberDto 검증할 회원 정보가 포함된 MemberDto 객체
+     @return 각 검증 항목의 이름과 해당 검증 결과로 이루어진 맵
+     */
+    private Map<String, Boolean> validateSignUp(MemberDto memberDto) {
+        Map<String, Boolean> validationResult = new LinkedHashMap<>();
+
+        boolean loginIdValid = isLoginIdValid(memberDto);
+        validationResult.put("isLoginValid",isLoginIdValid(memberDto));
+        validationResult.putAll(duplicatePassword(memberDto));
+        validationResult.putAll(checkPasswordStrength(memberDto));
+        validationResult.putAll(userNameValid(memberDto));
+        validationResult.putAll(phoneNumberValid(memberDto));
+        validationResult.putAll(emailValid(memberDto));
+
+        return validationResult;
+    }
 }

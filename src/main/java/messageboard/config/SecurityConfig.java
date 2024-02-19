@@ -24,11 +24,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final CustomOauthLogoutHandler customOauthLogoutHandler;
     private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
     private final MemberRepository memberRepository;
+
+    private static String url[] ={"/login","/" ,"/createMember","/board","/board/*","/login-disabled","/login-error","/login-emailVerified","/verify/email",
+            "/check/loginId","/check/password/duplicate","/check/password/strength","/check/username/valid","/check/phone-number/valid","/check/email/valid"};
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/login","/" ,"/createMember","/board","/board/*","/login-disabled","/login-error","/login-emailVerified","/verify/email","/check/loginId","/duplicate/password"
-                ,"/Strength/password").permitAll().anyRequest().authenticated()
+                .antMatchers(url).permitAll().anyRequest().authenticated()
                 .and()
                 .formLogin().loginPage("/login")
                 .failureHandler(customAuthenticationFailHandler).successHandler(customAuthenticationSuccessHandler).loginProcessingUrl("/login")

@@ -2,19 +2,20 @@ package messageboard.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import messageboard.Dto.AddressDto;
 import messageboard.Dto.MemberDto;
 import messageboard.entity.member.Member;
 import messageboard.event.MemberJoinEvent;
 import messageboard.service.Impl.MemberServiceImpl;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerErrorException;
 
 import javax.validation.Valid;
 import java.util.HashMap;
@@ -36,22 +37,31 @@ public class MemberController {
     }
 
     @PostMapping("/createMember")
-    public String createMemberPost(@Valid @ModelAttribute("member")MemberDto memberDto, BindingResult result,Model model){
-        boolean b = memberService.VerificationOfSingUp(memberDto);
-        log.info("b={}",b);
+    @ResponseBody
+    public ResponseEntity<?> createMemberPost(@Valid @RequestBody MemberDto memberDto, BindingResult result){
+        try {
+            boolean b = memberService.ValidationOfSignUp(memberDto);
+            if (!b) {
+                ObjectError error = new ObjectError("globalError", "아이디및 중복검사를 해주세요");
+                result.addError(error);
+            }
+            if (result.hasErrors()) {
+                Map<String,String> errorMessage=new HashMap<>();
+                for (FieldError error : result.getFieldErrors()) {
+                    errorMessage.put(error.getField(),error.getDefaultMessage());
+                }
+                ObjectError globalError = result.getGlobalError();
+                errorMessage.put(globalError.getObjectName(), globalError.getDefaultMessage());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+            }
 
-        if (!b){
-            ObjectError error = new ObjectError("globalError", "아이디및 중복검사를 해주세요");
-            result.addError(error);
+            Member member = memberService.saveDto(memberDto);
+            eventPublisher.publishEvent(new MemberJoinEvent(member));
+            return ResponseEntity.ok(member);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new ServerErrorException("오류발생");
         }
-
-        if (result.hasErrors()){
-            return "member/joinMember";
-        }
-
-        Member member = memberService.saveDto(memberDto);
-        eventPublisher.publishEvent(new MemberJoinEvent(member));
-        return "redirect:/";
     }
 
 

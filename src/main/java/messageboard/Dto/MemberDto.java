@@ -9,6 +9,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
 
 @Data
 @Builder
@@ -28,10 +29,10 @@ public class MemberDto {
     @NotEmpty(message = "비밀번호를 다시 입력해주세요")
     private String passwordRe;
 
-    @NotEmpty(message = "이메일을 입력하세요")
+    @Pattern(regexp = "^[a-zA-Z0-9]+@[a-zA-Z]+\\.[a-zA-Z]{2,}$", message = "이메일 형식이 올바르지 않습니다.")
     private String email;
 
-    @NotEmpty(message = "전화번호를 입력하세요")
+    @Pattern(regexp = "^\\d{8}$", message = "전화번호를 정확히 입력해주세요")
     private String phoneNumber;
 
     @Min(1968)
