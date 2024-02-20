@@ -48,6 +48,28 @@
       </form>
     </div>
 
+      <div class="text-center">
+        <a href="/oauth2/authorization/facebook">
+          <img src="/img/logo/facebook.png" style="width: 175px; height: 40px" alt="페이스북 로그인">
+        </a>
+      </div>
+
+      <div class="text-center">
+        <a href="/oauth2/authorization/google">
+          <img src="/img/logo/google.png" alt="구글 로그인">
+        </a>
+      </div>
+
+      <div class="text-center">
+        <a href="https://kauth.kakao.com/oauth/authorize" th:href="@{/oauth2/authorization/kakao}">
+          <img src="/img/logo/kakao_login.png" style="width: 175px; height: 40px" alt="카카오톡 로그인">
+        </a>
+      </div>
+      <div class="text-center">
+        <a th:href="@{/oauth2/authorization/naver}">
+          <img src="/img/logo/naver.png" style="width: 175px; height: 40px" alt="네이버 로그인">
+        </a>
+      </div>
   </div>
 </div>
 </div>

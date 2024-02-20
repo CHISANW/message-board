@@ -38,6 +38,8 @@ public class Member {
 
     private boolean verified;
 
+    private String loginType;
+
 
 
     @JsonIgnore

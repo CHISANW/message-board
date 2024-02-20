@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import messageboard.handler.security.CustomAuthenticationFailHandler;
 import messageboard.handler.security.CustomAuthenticationSuccessHandler;
 import messageboard.handler.security.CustomOauthLogoutHandler;
+import messageboard.handler.security.OAuth2AuthorizationSuccessHandler;
 import messageboard.repository.MemberRepository;
+import messageboard.service.security.CustomOauthUserService;
 import messageboard.service.security.CustomUserDetailService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +26,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final CustomOauthLogoutHandler customOauthLogoutHandler;
     private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
     private final MemberRepository memberRepository;
+    private final CustomOauthUserService customOauthUserService;
 
     private static String url[] ={"/login","/" ,"/createMember","/board","/board/*","/login-disabled","/login-error","/login-emailVerified","/verify/email",
             "/check/loginId","/check/password/duplicate","/check/password/strength","/check/username/valid","/check/phone-number/valid","/check/email/valid"
@@ -37,7 +40,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .formLogin().loginPage("/login")
                 .failureHandler(customAuthenticationFailHandler).successHandler(customAuthenticationSuccessHandler).loginProcessingUrl("/login")
                 .and()
-                .logout().logoutUrl("/logout").logoutSuccessHandler(customOauthLogoutHandler);
+                .logout().logoutUrl("/logout").logoutSuccessHandler(customOauthLogoutHandler)
+                .and()
+                .oauth2Login().loginPage("/login").successHandler(new OAuth2AuthorizationSuccessHandler()).userInfoEndpoint().userService(customOauthUserService);
+
+
 
 
         http.cors().and().csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());

@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -220,6 +221,14 @@ public class BoardController {
         if (authentication.getPrincipal() instanceof User){
             User user = (User) authentication.getPrincipal();
             member = memberService.findByLoginId(user.getUsername());
+            model.addAttribute("member",member);
+        }
+
+        if (authentication.getPrincipal() instanceof OAuth2User) {
+            String name = authentication.getName();
+            log.info("지금은 OauthUser 로그인 입니다.");
+           member = memberService.findByLoginId(name);
+
             model.addAttribute("member",member);
         }
 

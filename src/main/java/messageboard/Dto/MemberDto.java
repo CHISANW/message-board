@@ -52,5 +52,7 @@ public class MemberDto {
 
     private boolean verified;
 
+    private String loginType;
+
 }
 

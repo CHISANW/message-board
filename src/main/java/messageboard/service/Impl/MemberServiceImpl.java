@@ -52,6 +52,7 @@ public class MemberServiceImpl implements MemberService {
                 .email(memberDto.getEmail())
                 .phoneNumber(memberDto.getPhoneNumber())
                 .verified(false)
+                .loginType("Normal")
                 .build();
         Address address = Address.builder()
                 .zipcode(memberDto.getAddressDto().getZipcode())
