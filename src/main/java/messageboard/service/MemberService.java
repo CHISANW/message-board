@@ -15,4 +15,5 @@ public interface MemberService {
 
     Member findByLoginId(String loginId);
 
+    Member findByUsernameAndLoginId(String username,String loginId);
 }

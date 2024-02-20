@@ -15,14 +15,14 @@ public interface BoardService{
 
     Page<Board> findPageAll(Pageable pageable);
 
-    boolean deleteBoard(Long boardId,String memberUsername);
+    boolean deleteBoard(BoardDto boardDto);
 
     Board updateBoard(BoardDto boardDto);
 
     Page<Board> search(String title,Pageable pageable);
     int board_like(BoardDto boardDto);
 
-   Integer passwordVerify(Long boardId, String password,String username);
+   Integer passwordVerify(BoardDto boardDto);
 
 
 }

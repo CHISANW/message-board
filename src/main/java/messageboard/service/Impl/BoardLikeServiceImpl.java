@@ -1,6 +1,7 @@
 package messageboard.service.Impl;
 
 import lombok.RequiredArgsConstructor;
+import messageboard.Dto.BoardDto;
 import messageboard.entity.Board_Like_check;
 import messageboard.entity.member.Member;
 import messageboard.repository.BoardLIkeRepository;
@@ -23,7 +24,8 @@ public class BoardLikeServiceImpl implements BardLikeService {
     public boolean isBoardCheck(Member loginMember,Long boardId){
 
         String loginMemberUsername = loginMember.getUsername();
-        Member member = memberService.findByUsername(loginMemberUsername);
+        String loginId = loginMember.getLoginId();
+        Member member = memberService.findByUsernameAndLoginId(loginMemberUsername,loginId);
 
         Board_Like_check boardLike = boardLIkeRepository.findMemberId(member.getId(),boardId);
         if (boardLike!=null && boardLike.isLike_check()){
@@ -35,10 +37,10 @@ public class BoardLikeServiceImpl implements BardLikeService {
 
     /**
      * 
-     * @param boardId 값으로 좋아요 삭제
+     * @param boardDto  boardDto의 id값으로 좋아요 삭제
      */
     @Override
-    public void deleteByBoardId(Long boardId) {
-        boardLIkeRepository.deleteBoard_Id(boardId);
+    public void deleteByBoardId(BoardDto boardDto) {
+        boardLIkeRepository.deleteBoard_Id(boardDto.getId());
     }
 }

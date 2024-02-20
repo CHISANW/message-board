@@ -29,12 +29,14 @@
 
       if (BoardConfirm){
         var id = document.getElementById('input_id').value;
-        var login = document.getElementById('loginMember_username').value;
+        var login_username = document.getElementById('loginMember_username').value;
+        var loginId = document.getElementById('loginId').value;
 
         var dto = {
           "id": id,
           "memberDto" :{
-            "username" : login
+            "username" : login_username,
+            "loginId" : loginId
           }
         }
         $.ajax({
@@ -73,7 +75,8 @@
     if (loginverfiy===true) {
       var id = document.getElementById('input_id').value;
       var comment = document.getElementById('comment_text').value;
-      var login = document.getElementById('loginMember_username').value;
+      var login_username = document.getElementById('loginMember_username').value;
+      const loginId=document.getElementById('loginId').value;
 
       var dto = {
         "comment": comment,
@@ -81,7 +84,8 @@
           "id": id
         },
         "memberDto": {
-          "username": login
+          "username": login_username,
+          "loginId" : loginId
         }
       };
 
@@ -108,11 +112,12 @@
 
   function deleteComment(commentId){
     const comment_id = commentId;
-    var login = document.getElementById('loginMember_username');
+    var username = document.getElementById('loginMember_username').value;
+    var loginId = document.getElementById('loginId');
     const boardId = document.getElementById('input_id').value;
 
-    if (login !== null){
-      login = login.value;
+    if (loginId !== null){
+      loginId = loginId.value;
     } else {
       alert("로그인후 이용할수 있습니다.");
       return; // 로그인되어 있지 않으면 함수를 종료합니다.
@@ -126,7 +131,8 @@
             "id" : boardId
           },
           "memberDto": {
-            "username": login
+            "username": username,
+            "loginId" :loginId
           }
         }
         $.ajax({
@@ -142,15 +148,14 @@
             location.reload();
           },
           error: function (xhr) {
-            if (xhr.status === 500) {
-             var errorMessage = JSON.parse(xhr.responseText);
+            var errorMessage = JSON.parse(xhr.responseText);
+            if (xhr.status === 400) {
              $.each(errorMessage,function (key, value){
                if (key==="message")
                  alert(value);
              });
             }
-            if (xhr === 401){
-            }
+
           }
         });
       }
@@ -176,16 +181,15 @@
   }
 
   function board_like(){
-    const loginEl= document.getElementById('loginMember_username');
-    var loginMember;
-    if(loginEl !=null){
-    loginMember=loginEl.value;
-    }
+    const loginUsername= document.getElementById('loginMember_username').value;
+    const loginId= document.getElementById('loginId').value;
+
     var id = document.getElementById('input_id').value;
     var dto = {
       "id" : id,
       "memberDto" : {
-        "username" : loginMember
+        "username" : loginUsername,
+        "loginId" : loginId
       }
     }
 
@@ -215,15 +219,17 @@
   }
 
   function verifyPassword() {
-    var passwordInput = document.getElementById('password').value;
-    var id = document.getElementById('input_id').value;
-    const loginMember= document.getElementById('loginMember_username').value;
+    const passwordInput = document.getElementById('password').value;
+    const id = document.getElementById('input_id').value;
+    const loginUsername= document.getElementById('loginMember_username').value;
+    const loginId = document.getElementById('loginId').value;
 
     var dto ={
       "id" : id,
       "password" : passwordInput,
       "memberDto" :{
-        "username" : loginMember
+        "username" : loginUsername,
+        "loginId" : loginId
       }
     }
 
@@ -259,7 +265,7 @@
       });
   }
 
-  //todo 게시판 모달창으로 수정하기
+  //todo 게시판 댓글 모달창으로 수정하기
   function openCommentModal(commentId) {
     // 선택한 댓글의 내용 가져오기
     if (loginverfiy === true) {
@@ -283,16 +289,17 @@
   function saveEditedComment(){
 
     const comment_id = document.getElementById('comment_id').value;
-    console.log(comment_id);
-    var login = document.getElementById('loginMember_username').value;
+    var login_username = document.getElementById('loginMember_username').value;
+    var loginId = document.getElementById('loginId').value;
     const edit_comment = document.getElementById('edited_comment').value;
-    console.log(edit_comment);
 
     var CommentDto ={
       "id" : comment_id,
       "comment" : edit_comment,
       "memberDto" : {
-        "username" : login
+        "username" : login_username,
+        "loginId" : loginId
+
       }
     }
 
@@ -328,6 +335,7 @@
     <div class="collapse navbar-collapse" id="navbarNavDropdown">
       <ul class="navbar-nav">
         <div sec:authorize="isAuthenticated()">
+          <input  type="hidden" id="loginId" th:value="${member.loginId}">
           <input  type="hidden" id="loginMember_username" th:value="${member.username}">
           <div class="d-flex justify-content-between">
             <div class="nav-item">
@@ -471,10 +479,6 @@
 
 
   <input type="hidden" id="input_id" th:value="*{id}">
-
-
-
-
 
 </div>
 </body>

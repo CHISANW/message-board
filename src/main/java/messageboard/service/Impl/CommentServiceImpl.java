@@ -32,7 +32,8 @@ public class CommentServiceImpl implements CommentService {
 
         Long boardId = commentDto.getBoardDto().getId();
         String username = commentDto.getMemberDto().getUsername();
-        Member byUsername = memberService.findByUsername(username);
+        String loginId = commentDto.getMemberDto().getLoginId();
+        Member byUsername = memberService.findByUsernameAndLoginId(username,loginId);
 
         Board byBoardId = boardService.findByBoardId(boardId);
 
@@ -62,7 +63,8 @@ public class CommentServiceImpl implements CommentService {
     @Override     //댓글지우기
     public void deleteComment(CommentDto commentDto){
         String dtoUsername = commentDto.getMemberDto().getUsername();
-        String username = memberService.findByUsername(dtoUsername).getUsername();  //로그인한 사용자 이름
+        String loginId = commentDto.getMemberDto().getLoginId();
+        String username = memberService.findByUsernameAndLoginId(dtoUsername,loginId).getUsername();  //로그인한 사용자 이름
         Long boardId = commentDto.getBoardDto().getId();
 
 
@@ -102,14 +104,16 @@ public class CommentServiceImpl implements CommentService {
     public void updateComment(CommentDto commentDto) {
         Long id = commentDto.getId();
         String username = commentDto.getMemberDto().getUsername();
-        Member byUsername = memberService.findByUsername(username);
+        String loginId = commentDto.getMemberDto().getLoginId();
+        Member byUsername = memberService.findByUsernameAndLoginId(username,loginId);
 
         Comment comment = commentRepository.findById(id).orElseThrow(() -> new CommentException("댓글 수정시 Id 오류"));
 
-        log.info("서브스 댓글 수정={}",comment.getMember().getUsername().equals(byUsername.getUsername()));
-        log.info("comment 댓글 수정={}",comment.getMember().getUsername());
-        log.info("byUsername 댓글 수정={}",byUsername.getUsername());
-        if(byUsername==null || !comment.getMember().getUsername().equals(byUsername.getUsername())){
+        log.info("서브스 댓글 수정={}",comment.getMember().getLoginId().equals(byUsername.getLoginId()));
+        log.info("comment 댓글 수정={}",comment.getMember().getLoginId());
+        log.info("byUsername 댓글 수정={}",byUsername.getLoginId());
+
+        if(byUsername==null || !comment.getMember().getLoginId().equals(byUsername.getLoginId())){
             throw new Login_RestException("사용자 인증 오류");
         }
 

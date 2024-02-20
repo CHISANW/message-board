@@ -130,11 +130,9 @@ public class BoardController {
     @ResponseBody
     public ResponseEntity<?> boardDelete(@RequestBody BoardDto boardDto){
         try{
-            Long id = boardDto.getId();
-            String memberUsername = boardDto.getMemberDto().getUsername();
 
-            boardLikeService.deleteByBoardId(id);
-            boolean deleteBoard = boardService.deleteBoard(id, memberUsername);
+            boardLikeService.deleteByBoardId(boardDto);
+            boolean deleteBoard = boardService.deleteBoard(boardDto);
             if (!deleteBoard){
                 throw new Login_RestException();
             }
@@ -169,16 +167,21 @@ public class BoardController {
     public ResponseEntity<?> updateBoardAfter(@RequestBody BoardDto boardDto){
         try{
             Board board = boardService.updateBoard(boardDto);
+
             return ResponseEntity.ok(board);
         }catch (NotFindPageException e){
             throw new NotFindPage_RestException("해당 게시물을 찾을수 없습니다.");
+        }catch (Login_RestException e){
+            throw new Login_RestException("작성자만 수정 가능합니다.");
         }
     }
 
+    // TODO: 2024-02-20 좋아요, 댓글 삭제, 수정, 유니크 제약 조건 수정하기
     @PostMapping("/api/board/likes")
     @ResponseBody
     public ResponseEntity<?> boardLikes(@RequestBody BoardDto boardDto){
         try{
+            log.info("boardDto={}",boardDto);
             int num = boardService.board_like(boardDto);
             return ResponseEntity.ok(num);
         }catch (Login_RestException e) {
@@ -191,13 +194,8 @@ public class BoardController {
     @ResponseBody
     public ResponseEntity<?> verifyPassword(@RequestBody BoardDto boardDto){
         try {
-            log.info("dto={}",boardDto);
-            String password = boardDto.getPassword();
 
-            String dtoUsername = boardDto.getMemberDto().getUsername();
-
-            Long boardId = boardDto.getId();
-            Integer integer = boardService.passwordVerify(boardId, password, dtoUsername);
+            Integer integer = boardService.passwordVerify(boardDto);
 
             if (integer==2){
                throw new Login_RestException();

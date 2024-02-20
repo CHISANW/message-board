@@ -37,6 +37,12 @@ public class RestApiControllerAdvice {
     }
 
     @ExceptionHandler
+    public ResponseEntity<ErrorResult> board_restHandler(BoardException e){
+        log.error("[exception] ex",e);
+        ErrorResult errorResult = new ErrorResult("Board-Ex", e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResult);
+    }
+    @ExceptionHandler
     public ResponseEntity<ErrorResult> badRequest(BadRequestException e){
         log.error("[401 에러]",e);
         ErrorResult errorResult = new ErrorResult("BadRequest-EX", e.getMessage());

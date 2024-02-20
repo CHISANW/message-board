@@ -3,6 +3,7 @@ package messageboard.service.Impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.BoardDto;
+import messageboard.Exception.BoardException;
 import messageboard.Exception.Login_RestException;
 import messageboard.Exception.NotFindPageException;
 import messageboard.entity.Board;
@@ -36,8 +37,9 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public Board save(BoardDto boardDto) {
 
+        String loginId = boardDto.getMemberDto().getLoginId();
         String username = boardDto.getMemberDto().getUsername();
-        Member byUsername = memberService.findByUsername(username);
+        Member byUsername = memberService.findByUsernameAndLoginId(username,loginId);
         if (byUsername==null)
             throw new Login_RestException("상품 저장 오류");
 
@@ -70,18 +72,22 @@ public class BoardServiceImpl implements BoardService {
 
     /**
      * true 반환시 삭제 성공 false 반환시 등록된 사용자만 삭제가능
-     * @param boardId
-     * @param memberUsername
+     * @param boardDto
      * @return
      */
     @Override
-    public boolean deleteBoard(Long boardId,String memberUsername) {
-        Member byUsername = memberService.findByUsername(memberUsername);
+    public boolean deleteBoard(BoardDto boardDto) {
+        String username = boardDto.getMemberDto().getUsername();
+        String loginId = boardDto.getMemberDto().getLoginId();
+
+        Long boardId = boardDto.getId();
+
+        Member byUsername = memberService.findByUsernameAndLoginId(username,loginId);
         Optional<Board> boardOptional = boardRepository.findById(boardId);
 
         if (boardOptional.isPresent()) {
-            String writer = boardOptional.get().getWriter();
-            if (byUsername!=null && writer.equals(memberUsername))
+            String boardLoginId = boardOptional.get().getMember().getLoginId();
+            if (byUsername!=null && boardLoginId.equals(byUsername.getLoginId()))
             {
                 boardLIkeRepository.deleteBoard_Id(boardId);
                 commentRepository.deleteByBoardId(boardId);
@@ -98,9 +104,15 @@ public class BoardServiceImpl implements BoardService {
     public Board updateBoard(BoardDto boardDto) {
 
         Board byBoardId = findByBoardId(boardDto.getId());
+        String loginId = boardDto.getMemberDto().getLoginId();
+        String username = boardDto.getMemberDto().getUsername();
+        Member byLoginId = memberService.findByUsernameAndLoginId(username,loginId);
 
-        byBoardId.update(boardDto.getTitle(), boardDto.getContent());
-        return boardRepository.save(byBoardId);
+        if (byBoardId.getMember().getLoginId().equals(byLoginId.getLoginId())){
+            byBoardId.update(boardDto.getTitle(), boardDto.getContent());
+            return boardRepository.save(byBoardId);
+        }else 
+            throw new Login_RestException("작성자가 아닐시 게시판 수정중 오류발생");
 
     }
 
@@ -117,9 +129,10 @@ public class BoardServiceImpl implements BoardService {
     public int board_like(BoardDto boardDto) {
         Long boardDtoId = boardDto.getId();
         String username = boardDto.getMemberDto().getUsername();       //로그인 사용자 정보
+        String loginId = boardDto.getMemberDto().getLoginId();       //로그인 사용자 정보
 
         Board board = findByBoardId(boardDtoId);
-        Member member = memberService.findByUsername(username);         //123
+        Member member = memberService.findByUsernameAndLoginId(username,loginId);         //123
 
         if (member!=null){
             Board_Like_check byMemberId = boardLIkeRepository.findMemberId(member.getId(),board.getId());     //로그인 사용자 정보를 사용해 좋아요했는지 찾는과정
@@ -157,13 +170,21 @@ public class BoardServiceImpl implements BoardService {
         return boardRepository.save(board);
     }
 
-    public Integer passwordVerify(Long boardId, String password,String username){
+    @Override
+    public Integer passwordVerify(BoardDto boardDto){
+        String password = boardDto.getPassword();
+        String username = boardDto.getMemberDto().getUsername();
+        String loginId = boardDto.getMemberDto().getLoginId();
+        Long boardId = boardDto.getId();
+
         Board byBoardId = findByBoardId(boardId);
         String boardPassword = byBoardId.getPassword();
-        Member memberUsername = memberService.findByUsername(username);
+        Member memberUsername = memberService.findByUsernameAndLoginId(username,loginId);
+        log.info("1={}",byBoardId.getMember().getLoginId());
+        log.info("2={}",memberUsername.getLoginId());
 
         if (boardPassword.equals(password)) {
-            if (memberUsername == null||!(byBoardId.getWriter().equals(username))) {
+            if (!byBoardId.getMember().getLoginId().equals(memberUsername.getLoginId())) {
                 return 2;  // 비밀번호는 o ,사용자 인증은 x
             }
             return 1;   //성공시 1로반환

@@ -11,6 +11,8 @@
   function writeboard(){
     const title = document.getElementById('title_input').value;
     const loginMember_username = document.getElementById('writer_input').value;
+    const loginId = document.getElementById('loginId').value;
+
     const password = document.getElementById('password_input').value;
     const content = document.getElementById('content_input').value;
 
@@ -19,7 +21,8 @@
       "password" : password,
       "content": content,
       "memberDto" :{
-        "username" :loginMember_username
+        "username" :loginMember_username,
+        "loginId" : loginId
       }
     }
 
@@ -81,6 +84,7 @@
       <button onclick="writeboard()">글쓰기</button>
       <button onclick="cancle()">취소</button>
     </div>
+    <input type="hidden" id="loginId" th:value="${member.loginId}">
   </div>
 
 </body>

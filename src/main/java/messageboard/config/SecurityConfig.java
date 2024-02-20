@@ -26,7 +26,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final MemberRepository memberRepository;
 
     private static String url[] ={"/login","/" ,"/createMember","/board","/board/*","/login-disabled","/login-error","/login-emailVerified","/verify/email",
-            "/check/loginId","/check/password/duplicate","/check/password/strength","/check/username/valid","/check/phone-number/valid","/check/email/valid"};
+            "/check/loginId","/check/password/duplicate","/check/password/strength","/check/username/valid","/check/phone-number/valid","/check/email/valid"
+
+    };
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()

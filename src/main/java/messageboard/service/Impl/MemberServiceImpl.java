@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.MemberDto;
 import messageboard.Exception.BadRequestException;
+import messageboard.Exception.Login_RestException;
 import messageboard.entity.member.Address;
 import messageboard.entity.member.Member;
 import messageboard.repository.AddressRepository;
@@ -69,6 +70,14 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.findByUsername(username);
     }
 
+    @Override
+    public Member findByUsernameAndLoginId(String username, String loginId) {
+        Member byUsernameAndLoginId = memberRepository.findByUsernameAndLoginId(username, loginId);
+        if (byUsernameAndLoginId==null){
+            throw new Login_RestException();
+        }
+        return byUsernameAndLoginId;
+    }
 
     @Override
     public Member findByLoginId(String loginId) {
