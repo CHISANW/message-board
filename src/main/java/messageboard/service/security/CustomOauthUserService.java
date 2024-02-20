@@ -31,9 +31,10 @@ public class CustomOauthUserService extends DefaultOAuth2UserService {
         String requestId = userRequest.getClientRegistration().getRegistrationId();
         session.setAttribute("Token",tokenValue);
 
-        log.info("userRequest={}",userRequest);
-        log.info("userRequest.getAccessToken={}",userRequest.getAccessToken());
+        log.info("tokenValue={}",tokenValue);
         log.info("oAuth2User={}",oAuth2User);
+        log.info("oAuth2User={}",oAuth2User.getAttributes());
+        log.info("oAuth2User={}",oAuth2User.getAttributes().get("id"));
         log.info("userRequestget.ClientRegistration={}",userRequest.getClientRegistration());
         log.info("requestId={}",requestId);
 
@@ -43,6 +44,9 @@ public class CustomOauthUserService extends DefaultOAuth2UserService {
             oauth2UserInfo= new GoogleUserInfo(oAuth2User.getAttributes());
             save(oauth2UserInfo.getId(),oauth2UserInfo.getName(),oauth2UserInfo.getEmail(),requestId);
 
+        }if (requestId.equals("facebook")){
+            oauth2UserInfo=new FacebookUserInfo(oAuth2User.getAttributes());
+            save(oauth2UserInfo.getId(),oauth2UserInfo.getName(),oauth2UserInfo.getEmail(),requestId);
         }
 
         return super.loadUser(userRequest);
