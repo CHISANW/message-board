@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpSession;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -22,6 +23,13 @@ public class CustomOauthUserService extends DefaultOAuth2UserService {
 
     private final MemberRepository memberRepository;
     private final HttpSession session;
+
+    /**
+     * Oauth2 간편로그인시에 간편하게 회원가입을 따로하지않고 request 값을 통해  간편하게 회원가입을 진행한다.
+     * @param userRequest the user request
+     * @return 넘어온 request 값을 그대로반환
+     * @throws OAuth2AuthenticationException
+     */
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
 
@@ -33,8 +41,9 @@ public class CustomOauthUserService extends DefaultOAuth2UserService {
 
         log.info("tokenValue={}",tokenValue);
         log.info("oAuth2User={}",oAuth2User);
-        log.info("oAuth2User={}",oAuth2User.getAttributes());
-        log.info("oAuth2User={}",oAuth2User.getAttributes().get("id"));
+        log.info("getAttributes={}",oAuth2User.getAttributes());
+        log.info("properties={}",oAuth2User.getAttributes().get("properties"));
+        log.info("email={}",oAuth2User.getAttributes().get("email"));
         log.info("userRequestget.ClientRegistration={}",userRequest.getClientRegistration());
         log.info("requestId={}",requestId);
 
@@ -44,14 +53,24 @@ public class CustomOauthUserService extends DefaultOAuth2UserService {
             oauth2UserInfo= new GoogleUserInfo(oAuth2User.getAttributes());
             save(oauth2UserInfo.getId(),oauth2UserInfo.getName(),oauth2UserInfo.getEmail(),requestId);
 
-        }if (requestId.equals("facebook")){
+        }else if (requestId.equals("facebook")){
             oauth2UserInfo=new FacebookUserInfo(oAuth2User.getAttributes());
+            save(oauth2UserInfo.getId(),oauth2UserInfo.getName(),oauth2UserInfo.getEmail(),requestId);
+        }else if (requestId.equals("kakao")) {
+            oauth2UserInfo=new KakaoUserInfo(oAuth2User.getAttributes());
             save(oauth2UserInfo.getId(),oauth2UserInfo.getName(),oauth2UserInfo.getEmail(),requestId);
         }
 
         return super.loadUser(userRequest);
     }
 
+    /**
+     * 간편 로그인시에 자동으로 아이디, 이름,이메일, 로그인한 플랫폼을 이용해 회원가입을 한다.
+     * @param id    사용자 아이디
+     * @param name  사용자 이름
+     * @param email 사용자 이메일
+     * @param requestId 로그인한 Oauth2 플랫폼
+     */
     private void save(String id,String name,String email,String requestId){
         Member member = Member.builder()
                 .loginId(id)

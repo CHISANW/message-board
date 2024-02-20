@@ -5,6 +5,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -27,7 +28,7 @@ public class LogInterceptor implements HandlerInterceptor {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String name;
 
-        if (authentication != null &&authentication.getPrincipal()instanceof User){
+        if (authentication != null &&(authentication.getPrincipal()instanceof User||authentication.getPrincipal()instanceof OAuth2User)){
             name= authentication.getName();
         }else {
             name="Non-user/"+UUID.randomUUID().toString().substring(0,4);
