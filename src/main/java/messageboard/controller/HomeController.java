@@ -12,6 +12,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.Map;
+
 @Controller
 @Slf4j
 @RequiredArgsConstructor
@@ -32,8 +34,20 @@ public class HomeController {
 
         if (authentication.getPrincipal() instanceof OAuth2User) {
             String name = authentication.getName();
+
+            //네이버 로그인시
+            Map<String,String> loginMember = ((OAuth2User) authentication.getPrincipal()).getAttribute("response");
+            String NaverId = loginMember.get("id");
+
+            if (NaverId!=null) {
+                Member member = memberService.findByUsername(NaverId);
+                model.addAttribute("member",member);
+            }
+
             log.info("지금은 OauthUser 로그인 입니다.");
             Member member = memberService.findByUsername(name);
+
+            log.info("name={}",name);
             model.addAttribute("member",member);
         }
 

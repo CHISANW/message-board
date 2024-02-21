@@ -59,6 +59,9 @@ public class CustomOauthUserService extends DefaultOAuth2UserService {
         }else if (requestId.equals("kakao")) {
             oauth2UserInfo=new KakaoUserInfo(oAuth2User.getAttributes());
             save(oauth2UserInfo.getId(),oauth2UserInfo.getName(),oauth2UserInfo.getEmail(),requestId);
+        }else if (requestId.equals("naver")){
+            oauth2UserInfo = new NaverUserInfo(oAuth2User.getAttributes());
+            save(oauth2UserInfo.getId(), oauth2UserInfo.getName(), oauth2UserInfo.getEmail(),requestId);
         }
 
         return super.loadUser(userRequest);

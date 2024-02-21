@@ -3,6 +3,7 @@ package messageboard.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.MemberDto;
+import messageboard.Exception.BadRequestException;
 import messageboard.entity.member.Member;
 import messageboard.event.MemberJoinEvent;
 import messageboard.service.Impl.MemberServiceImpl;
@@ -41,9 +42,12 @@ public class MemberController {
     public ResponseEntity<?> createMemberPost(@Valid @RequestBody MemberDto memberDto, BindingResult result){
         try {
             boolean b = memberService.ValidationOfSignUp(memberDto);
+            log.info("b={}",b);
             if (!b) {
-                ObjectError error = new ObjectError("globalError", "아이디및 중복검사를 해주세요");
+                ObjectError error = new ObjectError("globalError", "회원가입시 모든 조건을 만족해주세요");
                 result.addError(error);
+            } else if (b) {
+
             }
             if (result.hasErrors()) {
                 Map<String,String> errorMessage=new HashMap<>();
@@ -58,7 +62,7 @@ public class MemberController {
             Member member = memberService.saveDto(memberDto);
             eventPublisher.publishEvent(new MemberJoinEvent(member));
             return ResponseEntity.ok(member);
-        }catch (Exception e){
+       } catch (Exception e){
             e.printStackTrace();
             throw new ServerErrorException("오류발생");
         }

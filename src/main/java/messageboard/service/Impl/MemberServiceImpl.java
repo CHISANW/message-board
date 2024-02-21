@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ServerErrorException;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -41,29 +42,28 @@ public class MemberServiceImpl implements MemberService {
      */
     @Override
     public Member saveDto(MemberDto memberDto) {
-        // 회원 정보를 생성하여 데이터베이스에 저장합니다.
-        Member member = Member.builder()
-                .username(memberDto.getUsername())
-                .loginId(memberDto.getLoginId())
-                .password(passwordEncoder.encode(memberDto.getPassword()))
-                .year(memberDto.getYear())
-                .month(memberDto.getMonth())
-                .day(memberDto.getDay())
-                .email(memberDto.getEmail())
-                .phoneNumber(memberDto.getPhoneNumber())
-                .verified(false)
-                .loginType("Normal")
-                .build();
-        Address address = Address.builder()
-                .zipcode(memberDto.getAddressDto().getZipcode())
-                .address(memberDto.getAddressDto().getAddress())
-                .detailAddr(memberDto.getAddressDto().getDetailAddr())
-                .subAddr(memberDto.getAddressDto().getSubAddr())
-                .member(member)
-                .build();
-
-        addressRepository.save(address);
-        return saveEntity(member);
+            // 회원 정보를 생성하여 데이터베이스에 저장합니다.
+            Member member = Member.builder()
+                    .username(memberDto.getUsername())
+                    .loginId(memberDto.getLoginId())
+                    .password(passwordEncoder.encode(memberDto.getPassword()))
+                    .year(memberDto.getYear())
+                    .month(memberDto.getMonth())
+                    .day(memberDto.getDay())
+                    .email(memberDto.getEmail())
+                    .phoneNumber(memberDto.getPhoneNumber())
+                    .verified(false)
+                    .loginType("Normal")
+                    .build();
+            Address address = Address.builder()
+                    .zipcode(memberDto.getAddressDto().getZipcode())
+                    .address(memberDto.getAddressDto().getAddress())
+                    .detailAddr(memberDto.getAddressDto().getDetailAddr())
+                    .subAddr(memberDto.getAddressDto().getSubAddr())
+                    .member(member)
+                    .build();
+            addressRepository.save(address);
+            return saveEntity(member);
     }
 
     @Override
@@ -79,6 +79,20 @@ public class MemberServiceImpl implements MemberService {
         }
         return byUsernameAndLoginId;
     }
+//
+//    /**
+//     * 대소문자를 구분한 이메일 값을 찾는다.
+//     * @param email
+//     * @return 값이 있다면 true 값이 없다면 false;
+//     */
+//    @Override
+//    public Boolean findByCaseSensitiveEmail(String email) {
+//        Member member = memberRepository.findByCaseSensitiveEmail(email);
+//        if (member==null){
+//            return true;
+//        }
+//        return true;
+//    }
 
     @Override
     public Member findByLoginId(String loginId) {
@@ -117,7 +131,14 @@ public class MemberServiceImpl implements MemberService {
      */
     private boolean isLoginIdValid(MemberDto memberDto) {
         String loginId = memberDto.getLoginId();
-        return Pattern.compile("^[a-zA-Z0-9]{8,16}$").matcher(loginId).find();
+        Member member = memberRepository.findByCaseSensitiveLoginId(loginId);
+
+        boolean  pattern= Pattern.compile("^[a-zA-Z0-9]{8,16}$").matcher(loginId).find();
+        if (member!=null||!pattern) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -218,10 +239,30 @@ public class MemberServiceImpl implements MemberService {
             Map<String, Boolean> result = new LinkedHashMap<>();
             String email = memberDto.getEmail();
 
-            boolean valid = Pattern.compile("^[a-zA-Z0-9]+@[a-zA-Z]+\\.[a-zA-Z]{2,}$").matcher(email).matches();
-            result.put("useEmail", valid);
+            boolean valid = Pattern.compile("^[a-zA-Z0-9]+@[a-zA-Z]+\\.(com|net)$").matcher(email).matches();
+
+            if (valid) {
+                // 이메일이 데이터베이스에 존재하는지 확인
+                List<Member> member = memberRepository.findByEmail(email);
+                for (Member member1 : member) {
+                    if (member1.getLoginType().equals("Normal")) {
+                      result.put("duplicateEmail",false);
+                    } else {
+                        result.put("duplicateEmail",true);
+                    }
+                }
+                if (member.isEmpty()){
+                    log.info("사용가능한 이메일");
+                    result.put("duplicateEmail",true);
+                }
+            }else
+                result.put("useEmail",valid);
+
+            log.info("reult={}",result);
+
             return result;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException();
         }
     }
@@ -235,7 +276,7 @@ public class MemberServiceImpl implements MemberService {
     private Map<String, Boolean> validateSignUp(MemberDto memberDto) {
         Map<String, Boolean> validationResult = new LinkedHashMap<>();
 
-        boolean loginIdValid = isLoginIdValid(memberDto);
+//        boolean loginIdValid = isLoginIdValid(memberDto);
         validationResult.put("isLoginValid",isLoginIdValid(memberDto));
         validationResult.putAll(duplicatePassword(memberDto));
         validationResult.putAll(checkPasswordStrength(memberDto));

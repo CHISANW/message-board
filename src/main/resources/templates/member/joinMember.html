@@ -210,11 +210,14 @@
                 xhr.setRequestHeader(csrfHeader,csrfToken);
             },
             success : function (response){
+                console.log(response);
                 var usePhoneNumber =response.usePhoneNumber;
+                console.log(usePhoneNumber)
                 if (usePhoneNumber===true){
                     phoneCheck =true;
                     $('#PhoneNumberError').html("");
-                }else if (usePhoneNumber==false){
+                }
+                if (usePhoneNumber==false){
                     phoneCheck= false;
                     $('#PhoneNumberError').html("<span>전화번호를 정확히 입력해주세요</span>").css({"color": "#FA3E3E"});
                 }
@@ -250,12 +253,21 @@
             },
             success : function (response){
                 var useEmail =response.useEmail;
+                const duplicateEmail = response.duplicateEmail;
+                console.log(duplicateEmail);
                 if (useEmail===true){
                     emailCheck = true;
                     $('#emailError').html("");
                 }else if (useEmail==false){
                     emailCheck=false;
                     $('#emailError').html("<span>이메일 형식이 올바르지 않습니다.</span>").css({"color": "#FA3E3E"});
+                }
+                if (duplicateEmail===true){
+                    emailCheck==true;
+                    $('#emailError').html("<span>사용가능한 이메일입니다.</span>").css({"color": "#0a53be"});
+                }else if (duplicateEmail===false){
+                    emailCheck==false;
+                    $('#emailError').html("<span>이미 가입된 이메일입니다.</span>").css({"color": "#FA3E3E"});
                 }
                 if (email===""){
                     $('#emailError').html("");
@@ -304,7 +316,6 @@
             }
         }
 
-       // if (usernameCheck&&loginIdCheck&&passwordCheck&&passwordReCheck&&phoneCheck&&addressCheck) {
            $.ajax({
                url: "/createMember",
                method: "post",
@@ -319,8 +330,11 @@
                error: function (xhr) {
                    var parse = JSON.parse(xhr.responseText);
                    console.log(parse);
-
+                   if (xhr.status=400){
+                       alert(parse.globalError);
+                   }
                    $.each(parse, function (key, value) {
+
                        if (key === "username") {
                            $('#userError').html(value).css({"color": "#FA3E3E", "font-size": "13px"});
                        }
@@ -344,13 +358,12 @@
                            "color": "#FA3E3E",
                            "font-size": "13px"
                        });
+
                    })
 
 
                }
            });
-       // }else
-       //     alert("모든 값을 입력해주세요");
 
     }
 
@@ -364,9 +377,10 @@
 </style>
 <body>
 <div th:object="${member}">
+
     <div th:if="${#fields.hasErrors('global')}">
         <h3>오류 안내</h3>
-        <p th:each="err : ${#fields.errors('global')}" th:text="${err}" class="error" />
+        <p id="globalError"/>
     </div>
 
 <!--    이름-->

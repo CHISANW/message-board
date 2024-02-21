@@ -111,28 +111,23 @@
   }
 
   function deleteComment(commentId){
-    const comment_id = commentId;
-    var username = document.getElementById('loginMember_username').value;
-    var loginId = document.getElementById('loginId');
-    const boardId = document.getElementById('input_id').value;
 
-    if (loginId !== null){
-      loginId = loginId.value;
-    } else {
-      alert("로그인후 이용할수 있습니다.");
-      return; // 로그인되어 있지 않으면 함수를 종료합니다.
-    }
+    if (loginverfiy===true) {
+      const comment_id = commentId;
+      var username = document.getElementById('loginMember_username').value;
+      var loginId = document.getElementById('loginId').value;
+      const boardId = document.getElementById('input_id').value;
 
-    var commentConfirm = confirm("삭제하시겠습니까?");
+      var commentConfirm = confirm("삭제하시겠습니까?");
       if (commentConfirm) {
         var dto = {
           "id": comment_id,
-          "boardDto" :{
-            "id" : boardId
+          "boardDto": {
+            "id": boardId
           },
           "memberDto": {
             "username": username,
-            "loginId" :loginId
+            "loginId": loginId
           }
         }
         $.ajax({
@@ -140,8 +135,8 @@
           method: "delete",
           contentType: "application/json",
           data: JSON.stringify(dto),
-          beforeSend : function (xhr){
-            xhr.setRequestHeader(csrfHeader,csrfToken);
+          beforeSend: function (xhr) {
+            xhr.setRequestHeader(csrfHeader, csrfToken);
           },
           success: function (res) {
             alert("삭제성성공");
@@ -150,15 +145,17 @@
           error: function (xhr) {
             var errorMessage = JSON.parse(xhr.responseText);
             if (xhr.status === 400) {
-             $.each(errorMessage,function (key, value){
-               if (key==="message")
-                 alert(value);
-             });
+              $.each(errorMessage, function (key, value) {
+                if (key === "message")
+                  alert(value);
+              });
             }
 
           }
         });
       }
+    }else alert("로그인후 이용 가능합니다.");
+
   }
 
   function openModal() {
@@ -181,6 +178,7 @@
   }
 
   function board_like(){
+    if (loginverfiy===true){
     const loginUsername= document.getElementById('loginMember_username').value;
     const loginId= document.getElementById('loginId').value;
 
@@ -192,29 +190,29 @@
         "loginId" : loginId
       }
     }
-
-    $.ajax({
-      url: "/api/board/likes",
-      method: "post",
-      contentType : "application/json",
-      data : JSON.stringify(dto),
-      beforeSend : function (xhr){
-        xhr.setRequestHeader(csrfHeader,csrfToken);
-      },
-      success : function (response){
-        location.reload();
-      },
-      error : function (xhr){
-        if (xhr.status===401){
-          var errorMessage = JSON.parse(xhr.responseText);
-          $.each(errorMessage,function (key,value){
-            if (key==="message"){
-              alert(value);
-            }
-          });
+      $.ajax({
+        url: "/api/board/likes",
+        method: "post",
+        contentType: "application/json",
+        data: JSON.stringify(dto),
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader(csrfHeader, csrfToken);
+        },
+        success: function (response) {
+          location.reload();
+        },
+        error: function (xhr) {
+          if (xhr.status === 401) {
+            var errorMessage = JSON.parse(xhr.responseText);
+            $.each(errorMessage, function (key, value) {
+              if (key === "message") {
+                alert(value);
+              }
+            });
+          }
         }
-      }
-    });
+      });
+    }else alert("로그인후 이용가능합니다.");
 
   }
 
