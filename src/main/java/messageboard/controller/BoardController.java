@@ -227,9 +227,16 @@ public class BoardController {
         if (authentication.getPrincipal() instanceof OAuth2User) {
             String name = authentication.getName();
             log.info("지금은 OauthUser 로그인 입니다.");
-           member = memberService.findByLoginId(name);
 
-            model.addAttribute("member",member);
+            Map<String,String> loginMember = ((OAuth2User) authentication.getPrincipal()).getAttribute("response");
+            String NaverId = loginMember.get("id");
+            if (NaverId!=null){
+                log.info("네이버 로그인실행");
+                member = memberService.findByLoginId(NaverId);
+                model.addAttribute("member",member);
+            }
+
+            log.info("지금은 name={}",name);
         }
 
         return member;

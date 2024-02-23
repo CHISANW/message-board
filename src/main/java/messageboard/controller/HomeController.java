@@ -40,7 +40,9 @@ public class HomeController {
                 log.info("loginMember={}",loginMember);
                 if (loginMember!=null){
                     String NaverId = loginMember.get("id");
-                    Member member = memberService.findByUsername(NaverId);
+                    log.info("NaverId={}",NaverId);
+                    Member member = memberService.findByLoginId(NaverId);
+                    log.info("member={}",member);
                     model.addAttribute("member", member);
                 }
 
