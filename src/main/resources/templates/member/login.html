@@ -19,6 +19,14 @@
 </style>
 <script th:inline="javascript">
 
+  function findId(){
+    alert("아이디 찾기버튼 클릭");
+  }
+
+  function findPwd(){
+    alert("비밀번호 찾기버튼 클릭")
+  }
+
 </script>
 <body>
 
@@ -41,6 +49,11 @@
         </div>
         <div class="form-floating mb-3 text-center">
           <input type="password"  name="password" placeholder="Password"/>
+        </div>
+
+        <div class="form-floating mb-3 text-center">
+          <a type="button" onclick="findId()">아이디찾기</a>
+          <a type="button" onclick="findPwd()">비밀번호찾기</a>
         </div>
         <div class="text-center">
           <button  class="btn btn-primary" type="submit" >로그인</button>

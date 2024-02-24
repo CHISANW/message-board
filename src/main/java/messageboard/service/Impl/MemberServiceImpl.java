@@ -15,9 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ServerErrorException;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @Service
@@ -25,6 +23,9 @@ import java.util.regex.Pattern;
 @Slf4j
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
+
+    private static final String NORMAL= "Normal";
+    private static final String SOCIAL= "social";
 
     private final MemberRepository memberRepository;
     private final AddressRepository addressRepository;
@@ -265,6 +266,22 @@ public class MemberServiceImpl implements MemberService {
             e.printStackTrace();
             throw new RuntimeException();
         }
+    }
+
+    public Map<String,String> findIdByEmailAndName(String email, String username){
+        Map<String, String> result = new LinkedHashMap<>();
+        List<Member> byUsernameAndEmail = memberRepository.findByUsernameAndEmail(username, email);
+        if (byUsernameAndEmail ==null){
+            throw new BadRequestException("아아디찾기 오류");
+        }
+
+        for (Member member : byUsernameAndEmail) {
+            if (member.getLoginType().equals(NORMAL)){
+                result.put(NORMAL,member.getLoginId());
+            }else
+                result.put(SOCIAL, member.getLoginType());
+        }
+        return result;
     }
 
     /**

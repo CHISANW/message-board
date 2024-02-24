@@ -20,6 +20,7 @@ import org.springframework.web.server.ServerErrorException;
 
 import javax.validation.Valid;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -67,6 +68,29 @@ public class MemberController {
             throw new ServerErrorException("오류발생");
         }
     }
+
+    @GetMapping("/member/findId")
+    public String findId(Model model){
+        model.addAttribute("member",new MemberDto());
+        return "member/findId";
+    }
+
+    @GetMapping("/api/findId")
+    @ResponseBody
+    public ResponseEntity<?> findById(@RequestParam("email") String email, @RequestParam("username") String username){
+        try {
+            Map<String, String> idByEmailAndName = memberService.findIdByEmailAndName(email, username);
+            log.info("값={}",idByEmailAndName);
+            return ResponseEntity.ok(idByEmailAndName);
+        }catch (BadRequestException e){
+            throw new BadRequestException("일치하는 사용자가 없습니다.");
+        }catch (Exception e){
+            throw new ServerErrorException("서버오류");
+        }
+
+    }
+
+
 
 
 

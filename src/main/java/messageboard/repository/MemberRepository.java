@@ -22,6 +22,8 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
     @Query("select m from Member m where  binary(m.loginId)=:loginId")      //MySQL의 BINARY 타입을 사용해 대소문자를 구문하기 위한 쿼리 사용
     Member findByCaseSensitiveLoginId(@Param("loginId") String loginId);
 
+    List<Member> findByUsernameAndEmail(String username, String email);
+
 //    @Query("select m from Member m where  binary(m.email)=:email")      //MySQL의 BINARY 타입을 사용해 대소문자를 구문하기 위한 쿼리 사용
 //    Member findByCaseSensitiveEmail(@Param("email") String email);
 }
