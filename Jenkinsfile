@@ -27,5 +27,13 @@ pipeline{
                 }
             }
         }
+        stage('Docker run Cotainier'){
+            steps{
+                script{
+                    bat 'docker rm -f board-con || true'
+                    bat ' docker run -d -p 8000:8080 --network testServer --name board-con keuye0638/board_springboot:1.0'
+                }
+            }
+        }
     }
 }
