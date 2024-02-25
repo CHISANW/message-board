@@ -268,6 +268,12 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
+    /**
+     * 아이디 찾기시에 사용된다. 여러개의 이메일로 가입될수있다.
+     * @param email
+     * @param username
+     * @return 일반 회원가입시에는 NORMAL반환 소셜로그인시 SOCIA반환
+     */
     public Map<String,String> findIdByEmailAndName(String email, String username){
         Map<String, String> result = new LinkedHashMap<>();
         List<Member> byUsernameAndEmail = memberRepository.findByUsernameAndEmail(username, email);
@@ -282,6 +288,21 @@ public class MemberServiceImpl implements MemberService {
                 result.put(SOCIAL, member.getLoginType());
         }
         return result;
+    }
+
+    /**
+     * 비밀번호 찾기시 사용되는 메서드 이름과, 이메일, 로그인아이디를 통해서 비밀번호를 찾는다.
+     * @param username
+     * @param email
+     * @param loginId
+     * @return
+     */
+    @Override
+    public String findPasswordByEmailAndIdAndName(String username, String email, String loginId) {
+        Member member = memberRepository.findByUsernameAndEmailAndLoginId(username, email, loginId);
+        if (member==null) throw new BadRequestException();
+        String password = member.getPassword();
+        return password;
     }
 
     /**

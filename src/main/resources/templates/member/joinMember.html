@@ -2,8 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <!--<head th:replace="fragments/header :: header">-->
 <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>회원가입</title>
 </head>
 
 <script th:inline="javascript">
@@ -421,11 +422,11 @@
 
 <!--    생년월일-->
     <div>
-        <input type="number" id="yearInput" th:field="*{year}"placeholder="2022" style="width: 50px" min="1900" max="2020" onchange="checkYearMax()"/>
+        <input type="number" id="yearInput" th:field="*{year}"placeholder="2022" style="width: 50px" min="1900" max="2020"/>
         <label th:for="year">년도</label>
-        <input type="number" id="monthInput" th:field="*{month}"placeholder="1" style="width: 50px"min="1" max="12" onchange="checkMonth()"/>
+        <input type="number" id="monthInput" th:field="*{month}"placeholder="1" style="width: 50px"min="1" max="12"/>
         <label th:for="month">월</label>
-        <input type="number" id="dayInput" th:field="*{day}"placeholder="1" style="width: 50px" min="1" max="31" onchange="checkDay()"/>
+        <input type="number" id="dayInput" th:field="*{day}"placeholder="1" style="width: 50px" min="1" max="31" />
         <label th:for="day">일</label>
     </div>
 
@@ -468,5 +469,9 @@
     <button id="signUpBtn" onclick="singUp()" >회원가입</button>
     <a th:href="@{/}" class="btn">취소</a>
 </div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</body>
 </body>
 </html>
