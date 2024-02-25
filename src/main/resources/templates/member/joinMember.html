@@ -3,7 +3,7 @@
 <!--<head th:replace="fragments/header :: header">-->
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <title>회원가입</title>
 </head>
 
@@ -34,6 +34,7 @@
                 xhr.setRequestHeader(csrfHeader,csrfToken);
             },
             success : function (response){
+                console.log(response);
                 var isKorean= response.isKorean;
                 if (isKorean===false) {
                     usernameCheck=false;
@@ -369,6 +370,108 @@
     }
 
 </script>
+
+<body>
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <form th:object="${member}" id="signupForm">
+                <div th:if="${#fields.hasErrors('global')}" class="alert alert-danger">
+                    <h3>오류 안내</h3>
+                    <p th:text="${#fields.errors().globalError}"></p>
+                </div>
+
+                <!-- 이름 -->
+                <div class="form-group">
+                    <label for="username">이름</label>
+                    <input type="text" th:field="*{username}" id="username" class="form-control" placeholder="이름을 입력하세요" oninput="checkUsername()" autofocus>
+                    <small  id="userError"></small>
+                </div>
+
+                <!-- 아이디 -->
+                <div class="form-group">
+                    <label for="loginId">아이디</label>
+                    <input type="text" th:field="*{loginId}" id="loginId" class="form-control" placeholder="아이디" onInput="checkDuplicateId()">
+                    <small>8~16자리의 영문, 숫자만 사용해주세요.</small>
+                    <div>
+                        <small  id="loginIdError"></small>
+                    </div>
+                </div>
+
+                <!-- 비밀번호 -->
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" th:field="*{password}" id="password" class="form-control" placeholder="8~16자리/영문 대소문자,숫자,특수문자 조합" oninput="StrengthPassword_check()">
+                    <small>8~16자리 영문 대소문자, 숫자, 특수문자 중 3가지 이상 조합으로 만들어주세요.</small>
+                    <div>
+                     <small id="passwordError"></small>
+                    </div>
+                </div>
+
+                <!-- 비밀번호 재입력 -->
+                <div class="form-group">
+                    <label for="passwordRe">비밀번호 재입력</label>
+                    <input type="password" th:field="*{passwordRe}" id="passwordRe" class="form-control" placeholder="비밀번호를 재입력해주세요" oninput="checkMatchPwd()">
+                    <small id="passwordErrorRe" ></small>
+                </div>
+
+                <!-- 생년월일 -->
+                <div class="form-group">
+                    <label>생년월일</label>
+                    <div class="row">
+                        <div class="col">
+                            <input type="number" th:field="*{year}" id="yearInput" class="form-control" placeholder="년도" min="1900" max="2020">
+                        </div>
+                        <div class="col">
+                            <input type="number" th:field="*{month}" id="monthInput" class="form-control" placeholder="월" min="1" max="12">
+                        </div>
+                        <div class="col">
+                            <input type="number" th:field="*{day}" id="dayInput" class="form-control" placeholder="일" min="1" max="31">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 핸드폰번호 -->
+                <div class="form-group">
+                    <label for="phoneNumber">핸드폰번호</label>
+                    <input type="text" th:field="*{phoneNumber}" id="phoneNumber" class="form-control" placeholder="EX)12345678" oninput="checkPhoneNumber()">
+                    <small>"010,"-"를 제외한 뒷 8자리만 입력해주세요</small>
+                    <div>
+                        <small id="PhoneNumberError"></small>
+                    </div>
+                </div>
+
+                <!-- 이메일 -->
+                <div class="form-group">
+                    <label for="email">이메일</label>
+                    <input type="text" th:field="*{email}" id="email" class="form-control" placeholder="EX)ABCDE@naver.com" oninput="inputEmail()">
+                    <small id="emailError"></small>
+                </div>
+
+                <!-- 주소 -->
+                <div class="form-group">
+                    <label>주소</label>
+                    <div class="row">
+                        <div class="col">
+                            <input type="text" th:field="*{addressDto.zipcode}" id="zipcode" class="form-control" placeholder="우편번호" readonly>
+                        </div>
+                        <div class="col">
+                            <input type="button" onclick="sample6_execDaumPostcode()" value="우편번호 찾기" class="btn btn-primary">
+                        </div>
+                    </div>
+                    <input type="text" th:field="*{addressDto.address}" id="address" class="form-control" placeholder="주소" readonly>
+                    <input type="text" th:field="*{addressDto.subAddr}" id="subAddr" class="form-control" placeholder="참고항목" readonly>
+                    <input type="text" th:field="*{addressDto.detailAddr}" id="detailAddr" class="form-control" placeholder="상세주소">
+                    <small class="text-danger" th:errors="*{addressDto.address}"></small>
+                </div>
+
+                <!-- 회원가입 버튼 -->
+                <button type="button" onclick="singUp()" class="btn btn-primary">회원가입</button>
+                <a th:href="@{/}" class="btn btn-secondary">취소</a>
+            </form>
+        </div>
+    </div>
+</div>
 <style>
     .invalid-feedback{
         color: #FA3E3E;
@@ -376,102 +479,7 @@
         font-size: 15px;
     }
 </style>
-<body>
-<div th:object="${member}">
-
-    <div th:if="${#fields.hasErrors('global')}">
-        <h3>오류 안내</h3>
-        <p id="globalError"/>
-    </div>
-
-<!--    이름-->
-    <div>
-        <label th:for="usernmae">이름</label>
-        <input type="text" th:field="*{username}" id="username" placeholder="이름을 입력하세요" oninput="checkUsername()" autofocus>
-        <div th:class="invalid-feedback" id="userError">
-            <small class="text-danger" th:errors="*{username}"/>
-        </div>
-    </div>
-<!--    아이디/-->
-    <div class="form-group">
-        <label for="loginId"> 아이디</label>
-        <input type="text"  th:field="*{loginId}" id="loginId" name="loginId" class="form-control"placeholder="아이디" onInput="checkDuplicateId()">
-        <small> 8~16자리의 영문, 숫자만 사용해주세요.</small>
-        <div class="invalid-feedback" id="loginIdError">
-            <small th:class="text-danger" th:errors="*{loginId}"></small>
-        </div>
-    </div>
-<!--    비밀번호-->
-    <div>
-        <label th:for="password">비밀번호</label>
-        <input type="password" th:field="*{password}" id="password" placeholder="8~16자리/영문 대소문자,숫자,특수문자 조합" oninput="StrengthPassword_check()">
-        <small> 8~16자리 영문 대소문자, 숫자, 특수문자 중 3가지 이상 조합으로 만들어주세요.</small>
-        <div th:class="invalid-feedback" id="passwordError">
-            <div th:class="text-danger" th:errors="*{password}"/>
-        </div>
-    </div>
-
-<!--    비밀번호 재입력-->
-    <div>
-        <label th:for="passwordRe">비밀번호 재입력</label>
-        <input type="password" th:field="*{passwordRe}"id="passwordRe" placeholder="비밀번호를 재입력해주세요" oninput="checkMatchPwd()">
-        <div class="invalid-feedback" id="passwordErrorRe">
-            <small th:class="text-danger" th:errors="*{passwordRe}"></small>
-        </div>
-    </div>
-
-<!--    생년월일-->
-    <div>
-        <input type="number" id="yearInput" th:field="*{year}"placeholder="2022" style="width: 50px" min="1900" max="2020"/>
-        <label th:for="year">년도</label>
-        <input type="number" id="monthInput" th:field="*{month}"placeholder="1" style="width: 50px"min="1" max="12"/>
-        <label th:for="month">월</label>
-        <input type="number" id="dayInput" th:field="*{day}"placeholder="1" style="width: 50px" min="1" max="31" />
-        <label th:for="day">일</label>
-    </div>
-
-<!--    핸드폰-->
-    <div>
-        <label th:for="phoneNumber">핸드폰번호</label>
-        <input type="text" th:field="*{phoneNumber}" id="phoneNumber" placeholder="EX)12345678" oninput="checkPhoneNumber()">
-        <small>"010,"-"를 제외한 뒷 8자리만 입력해주세요</small>
-        <div class="invalid-feedback" id="PhoneNumberError">
-            <small th:class="text-danger" th:errors="*{phoneNumber}"></small>
-        </div>
-    </div>
-
-<!--    이메일-->
-    <div>
-        <label th:for="email">이메일</label>
-        <input type="text" th:field="*{email}" id="email" placeholder="EX)ABCDE@naver.com" oninput="inputEmail()">
-        <div class="invalid-feedback" id="emailError">
-            <small th:class="text-danger" th:errors="*{email}"></small>
-        </div>
-    </div>
-
-<!--    주소-->
-    <div class="from-group">
-        <label th:for="address">주소</label>
-        <input type="text" th:field="*{addressDto.zipcode}"  id="zipcode" placeholder="우편번호" readonly>
-        <input type="button" onClick="sample6_execDaumPostcode()" value="우편번호 찾기">
-        <br/>
-        <input type="text" th:field="*{addressDto.address}" id="address" placeholder="주소" readonly>
-        <input type="text" th:field="*{addressDto.subAddr}" id="subAddr" placeholder="참고항목" readonly>
-        <br>
-        <input type="text" th:field="*{addressDto.detailAddr}" id="detailAddr" placeholder="상세주소" >
-        <div class="invalid-feedback" id="addressError">
-            <small th:class="text-danger" th:errors="*{addressDto.address}"></small>
-        </div>
-    </div>
-
-
-<!--    <button type="submit" id="singUp"  disabled>회원가입</button>-->
-    <button id="signUpBtn" onclick="singUp()" >회원가입</button>
-    <a th:href="@{/}" class="btn">취소</a>
-</div>
-
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-</body>
 </body>
 </html>

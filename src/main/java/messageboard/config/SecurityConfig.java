@@ -30,7 +30,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static String url[] ={"/login","/" ,"/createMember","/board","/board/*","/login-disabled","/login-error","/login-emailVerified","/verify/email",
             "/check/loginId","/check/password/duplicate","/check/password/strength","/check/username/valid","/check/phoneNumber/valid","/check/email/valid",
-            "/member/findId","/api/findId","/findId/mailConfirm"
+            "/member/findId","/api/findId","/findId/mailConfirm","/member/findPwd","/api/findPwd","/api/change/Pwd"
 
     };
     @Override
@@ -44,8 +44,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .logout().logoutUrl("/logout").logoutSuccessHandler(customOauthLogoutHandler)
                 .and()
                 .oauth2Login().loginPage("/login").successHandler(new OAuth2AuthorizationSuccessHandler()).userInfoEndpoint().userService(customOauthUserService);
-
-
 
 
         http.cors().and().csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());

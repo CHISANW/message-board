@@ -80,6 +80,8 @@ public class MemberServiceImpl implements MemberService {
         }
         return byUsernameAndLoginId;
     }
+
+
 //
 //    /**
 //     * 대소문자를 구분한 이메일 값을 찾는다.
@@ -295,16 +297,43 @@ public class MemberServiceImpl implements MemberService {
      * @param username
      * @param email
      * @param loginId
-     * @return
+     * @return 비밀번호가 있다면 true 없을시에는 false 반환
      */
     @Override
-    public String findPasswordByEmailAndIdAndName(String username, String email, String loginId) {
+    public Boolean findPasswordByEmailAndIdAndName(String username, String email, String loginId) {
         Member member = memberRepository.findByUsernameAndEmailAndLoginId(username, email, loginId);
-        if (member==null) throw new BadRequestException();
-        String password = member.getPassword();
-        return password;
+        if (member==null) return false;
+
+        return true;
     }
 
+
+    public Map<String, Boolean> updatePassword(MemberDto memberDto){
+        Map<String, Boolean> stringBooleanMap = checkPasswordStrength(memberDto);
+        Boolean passwordStrength = stringBooleanMap.get("passwordStrength");
+
+        Map<String , Boolean> result = new LinkedHashMap<>();
+        Member member = memberRepository.findByUsernameAndEmailAndLoginId(memberDto.getUsername(), memberDto.getEmail(), memberDto.getLoginId());
+        String password = memberDto.getPassword();
+        String passwordRe = memberDto.getPasswordRe();
+        if (member!=null) {
+            result.put("FindUser", true);
+            if(passwordStrength) {
+                if (password.equals(passwordRe)) {
+                    result.put("passwordStrength",true);
+                    member.setPassword(passwordEncoder.encode(password));
+                    memberRepository.save(member);
+                    result.put("updatePassword", true);
+
+                } else
+                    result.put("updatePassword", false);
+            }else
+                result.put("passwordStrength",false);
+
+        }else result.put("FindUser", false);
+
+        return result;
+    }
     /**
      회원가입 정보를 검증하는 메서드로, 사용자가 제출한 회원가입 폼의 데이터를 기반으로 각각의 조건을 검사하여 결과를 반환.
      반환된 결과는 각 검증 항목의 이름과 검증 결과로 이루어진 맵 형태로 제공한다.

@@ -12,7 +12,7 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class FindIdEmailServiceImpl implements FindEmailService {
+public class FindEmailServiceImpl implements FindEmailService {
 
     private final JavaMailSender mailSender;
     private String code;
@@ -22,7 +22,7 @@ public class FindIdEmailServiceImpl implements FindEmailService {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
 
-            message.setSubject("아이디 찾기안내");
+            message.setSubject("인증번호 요청안내");
             message.setFrom("wlwhsrjaeka@naver.com");
             message.setText(getText());
             message.setTo(to);;

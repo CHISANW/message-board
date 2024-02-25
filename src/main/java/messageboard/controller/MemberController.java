@@ -8,8 +8,10 @@ import messageboard.entity.member.Member;
 import messageboard.event.MemberJoinEvent;
 import messageboard.service.Impl.MemberServiceImpl;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -20,6 +22,7 @@ import org.springframework.web.server.ServerErrorException;
 
 import javax.validation.Valid;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +33,7 @@ public class MemberController {
 
     private final MemberServiceImpl memberService;
     private final ApplicationEventPublisher eventPublisher;
-
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/createMember")
     public String createMember(Model model){
@@ -90,8 +93,41 @@ public class MemberController {
 
     }
 
+    @GetMapping("/member/findPwd")
+    public String findPwd(Model model){
+        model.addAttribute("member",new MemberDto());
+        return "member/findPwd";
+    }
 
+    @GetMapping("/api/findPwd")
+    @ResponseBody
+    public ResponseEntity<?> findByPwd( @RequestParam("username")String username,
+                                            @RequestParam("email") String email,
+                                            @RequestParam("loginId") String loginId){
+        try {
+            Boolean passwordByEmailAndIdAndName = memberService.findPasswordByEmailAndIdAndName(username,email,loginId);
+            Map<String, Boolean> result = new LinkedHashMap<>();
+            result.put("isPwd",passwordByEmailAndIdAndName);
+            return ResponseEntity.ok(result);
+        }catch (Exception e){
+            throw new ServerErrorException("서버오류");
+        }
 
+    }
+
+    @PostMapping("/api/change/Pwd")
+    @ResponseBody
+    public ResponseEntity<?> chanePassword(@RequestBody MemberDto memberDto){
+        try {
+            Map<String, Boolean> result = memberService.updatePassword(memberDto);
+            return ResponseEntity.ok(result);
+        }catch (BadRequestException e){
+            e.printStackTrace();
+            throw new BadRequestException("오류");
+        }catch (Exception e){
+            throw new ServerErrorException("서버오류");
+        }
+    }
 
 
 

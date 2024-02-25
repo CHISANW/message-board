@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+<script th:inline="javascript">
+  var csrfToken = /*[[${_csrf.token}]]*/ '';
+  var csrfHeader = /*[[${_csrf.headerName}]]*/ '';
+  var emailCheck = false;
+  var fieldCheck = false;
+
+  function emailConfirm(){
+    var email = document.getElementById('email').value;
+
+    if (email!==""){
+      document.getElementById('emailConfirmationForm').style.display = 'block';
+      $.ajax({
+        url: "/findId/mailConfirm",
+        method: "post",
+        data: {
+          "email":email
+        },
+        beforeSend : function (xhr){
+          xhr.setRequestHeader(csrfHeader,csrfToken);
+        },
+        success : function (response) {
+          alert("귀하의 이메일로 인증번호를 전송했습니다.");
+          checkCode(response);
+        }
+      });
+    }else
+      alert("이메일을 입력해주세요");
+  }
+  function checkCode(response) {
+    console.log(response)
+    $('#verificationCode').on("keyup", function () {
+      if (response !== $('#verificationCode').val()) {
+        $('#emailcode').html("<span>일치하지않습니다.</span>").css({"color": "#FA3E3E"});
+      } else {
+        emailCheck =true;
+        $('#emailcode').html("<span>일치합니다.</span>").css({"color": "#0a53be"})
+      }
+
+    })
+  }
+
+  function updatePwd(){
+    const username = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const loginId = document.getElementById('loginId').value;
+    const password = document.getElementById('new-password').value;
+    const passwordRe = document.getElementById('new-password-re').value;
+
+    var dto = {
+      "username":username,
+      "email" : email,
+      "loginId" : loginId,
+      "password" : password,
+      "passwordRe" : passwordRe
+    }
+    $.ajax({
+      url: "/api/change/Pwd",
+      method : "post",
+      contentType : "application/json",
+      data : JSON.stringify(dto),
+      beforeSend :function (xhr){
+        xhr.setRequestHeader(csrfHeader,csrfToken);
+      },
+      success : function (response){
+        const updatePassword = response.updatePassword;
+        const FindUser = response.FindUser;
+        const passwordStrength=response.passwordStrength;
+
+        if(FindUser ===true){
+          if (passwordStrength===true) {
+            if (updatePassword === true) {
+              alert("비밀번호 변경 성공");
+              window.location="/login";
+            }
+            else
+              alert("비밀번호가 일치하지 않습니다.");
+          }else alert("규칙에 맞게 다시 설정해주세요.");
+        }else
+          alert("가입된 회원이 없습니다.");
+      }
+    })
+  }
+  function findPwd(){
+    const username = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const loginId = document.getElementById('loginId').value;
+
+    if (username!==""&&loginId!==""){fieldCheck=true}
+
+    if (fieldCheck===true) {
+      if (emailCheck===true) {
+        $.ajax({
+          url: "/api/findPwd",
+          method: "get",
+          data: {
+            "username": username,
+            "email": email,
+            "loginId": loginId
+          },
+          beforeSend: function (xhr) {
+            xhr.setRequestHeader(csrfHeader, csrfToken);
+          },
+          success: function (response) {
+            const isPwd = response.isPwd;
+            if (isPwd === true) $('#exampleModal').modal('show');
+            else alert("등록된 회원이 없습니다.");
+
+          },
+          error: function (xhr) {
+            alert(xhr);
+          }
+        })
+      }else  alert("이메일 인증을 해주세요.");
+    }else
+      alert("모든 값을 입력해주세요.");
+
+  }
+</script>
+<body>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header text-center" style="font-weight: bold; font-size: 20px">비밀번호 찾기</div>
+        <div class="card-body">
+            <div class="form-group">
+              <label for="name">이름</label>
+              <input type="text" class="form-control" id="name">
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" class="form-control" id="email">
+              <button class="button btn-secondary" type="button" onclick="emailConfirm()">이메일 인증</button>
+            </div>
+          <div class="form-group" id="emailConfirmationForm" style="display: none;">
+            <!-- 이메일 인증 폼 -->
+            <label for="verificationCode" class="form-label">인증 코드</label>
+            <input type="text" class="form-control" id="verificationCode" required>
+            <small id="emailcode"></small>
+          </div>
+            <div class="form-group">
+              <label for="loginId">Login ID</label>
+              <input type="text" class="form-control" id="loginId">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="findPwd()">비밀번호 찾기</button>
+            <a type="button" class="btn btn-danger" th:href="@{/login}">취소</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">비밀번호 변경하기</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="new-password" class="col-form-label">새로운 비밀번호</label>
+            <input type="password" class="form-control" id="new-password">
+          </div>
+          <div class="mb-3">
+            <label for="new-password-re" class="col-form-label">새로운 비밀번호 재입력</label>
+            <input type="password" class="form-control" id="new-password-re">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="updatePwd()">비밀번호 변경하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</body>
+</html>
