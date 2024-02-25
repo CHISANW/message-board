@@ -4,43 +4,84 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script th:inline="javascript">
 
+  var checkfield = false;
   var csrfToken = /*[[${_csrf.token}]]*/ '';
   var csrfHeader = /*[[${_csrf.headerName}]]*/ '';
-  function findIdByEmailAndUsername(){
-    alert("버튼실행");
+
+  function emailConfirom(){
+    var email = document.getElementById('inputEmail').value;
+
+    if (email!==""){
+      document.getElementById('emailConfirmationForm').style.display = 'block';
+      $.ajax({
+        url: "/findId/mailConfirm",
+        method: "post",
+        data: {
+          "email":email
+        },
+        beforeSend : function (xhr){
+          xhr.setRequestHeader(csrfHeader,csrfToken);
+        },
+        success : function (response) {
+          alert("귀하의 이메일로 인증번호를 전송했습니다.");
+          checkCode(response);
+        }
+      });
+    }else
+      alert("이메일을 입력해주세요");
+  }
+  function checkCode(response) {
+    console.log(response)
+    $('#verificationCode').on("keyup", function () {
+      if (response !== $('#verificationCode').val()) {
+       $('#emailcode').html("<span>일치하지않습니다.</span>").css({"color": "#FA3E3E"});
+      } else {
+        checkfield =true;
+        $('#emailcode').html("<span>일치합니다.</span>").css({"color": "#0a53be"})
+      }
+
+    })
+  }
+  function findIdByEmailAndUsername() {
     const email = document.getElementById('inputEmail').value;
     const username = document.getElementById('inputName').value;
 
-    console.log(email);
-    console.log(username);
-    $.ajax({
-      url: "/api/findId",
-      method : "get",
-      data: {
-        "email": email,
-        "username": username
-      },
-      contentType: "application/json",
-      beforeSend : function (xhr){
-        xhr.setRequestHeader(csrfHeader,csrfToken);
-      },
-      success : function (response){
-        var normal=response.Normal;
-        var social=response.social;
+    if (checkfield === true) {
+      if (username!=="") {
+        $.ajax({
+          url: "/api/findId",
+          method: "get",
+          data: {
+            "email": email,
+            "username": username
+          },
+          contentType: "application/json",
+          beforeSend: function (xhr) {
+            xhr.setRequestHeader(csrfHeader, csrfToken);
+          },
+          success: function (response) {
+            var normal = response.Normal;
+            var social = response.social;
 
-        if (normal!=null)
-         $('#foundId').text("일반 아이디: " + normal);
-        if (social!==null)
-          $('#fondsocialId').text("소셜 연동: " + social)
+            if (normal != null)
+              $('#foundId').text("일반 아이디: " + normal);
+            if (social !== null)
+              $('#fondsocialId').text("소셜 연동: " + social)
 
-        // 모달 창을 보여주는 코드
-        $('#resultModal').modal('show');
-      },
-      error : function (xhr){
-        alert(xhr);
-      }
-    });
+            // 모달 창을 보여주는 코드
+            $('#resultModal').modal('show');
+          },
+          error: function (xhr) {
+            alert(xhr);
+          }
+        });
+      }else
+        alert("이름을 입력해주세요");
+    }else
+      alert("이메일인증을 해주세요");
+
   }
+
 </script>
 
 <body>
@@ -48,14 +89,26 @@
     <h1 class="mt-5">아이디 찾기</h1>
       <div class="mb-3">
         <label for="inputEmail" class="form-label">이메일</label>
-        <input type="email" th class="form-control" id="inputEmail"  aria-describedby="emailHelp">
-        <div id="emailHelp" class="form-text">가입할 때 사용한 이메일을 입력해주세요.</div>
+        <input type="email" th class="form-control" id="inputEmail"  placeholder="가입할 때 사용한 이메일을 입력해주세요.">
+        <button class="button btn-secondary" type="button" onclick="emailConfirom()">이메일 인증</button>
       </div>
+    <div class="mb-3" id="emailConfirmationForm" style="display: none;">
+      <!-- 이메일 인증 폼 -->
+      <label for="verificationCode" class="form-label">인증 코드</label>
+      <input type="text" class="form-control" id="verificationCode" required>
+      <small id="emailcode"></small>
+    </div>
       <div class="mb-3">
         <label for="inputName" class="form-label">이름</label>
         <input type="text" class="form-control" id="inputName">
       </div>
-      <button type="button" onclick="findIdByEmailAndUsername()" class="btn btn-primary">아이디 찾기</button>
+    <div>
+    <button type="button" onclick="findIdByEmailAndUsername()" class="btn btn-primary">아이디 찾기</button>
+    <a type="button" th:href="@{/login}" class="btn btn-danger">취소</a>
+    </div>
+    <div>
+      <a th:href="@{/login}" >로그인하러가기</a>
+    </div>
   </div>
 
   <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
