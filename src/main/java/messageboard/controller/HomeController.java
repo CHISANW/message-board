@@ -19,7 +19,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class HomeController {
 
-    private final MemberService memberService;
     @GetMapping("/")
     public String home(){
         return "redirect:/board";
