@@ -18,20 +18,6 @@ import javax.servlet.http.HttpServletResponse;
 public class LoginCheckInterceptor implements HandlerInterceptor {
 
     private final MemberRepository memberRepository;
-//    @Override
-//    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-//        String requestURI = request.getRequestURI();
-//
-//        HttpSession session = request.getSession(false);
-//
-//        Member loginMember = (Member) session.getAttribute("loginMember");
-//        if (session == null || loginMember == null || loginMember.getUsername() == null) {
-//            log.info("미사용자 요청");
-//            response.sendRedirect("/login?redirectURL=" + requestURI);
-//            return false;
-//        }
-//        return true;
-//    }
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
