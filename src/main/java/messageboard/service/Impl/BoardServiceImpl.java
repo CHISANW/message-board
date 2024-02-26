@@ -3,7 +3,6 @@ package messageboard.service.Impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messageboard.Dto.BoardDto;
-import messageboard.Exception.BoardException;
 import messageboard.Exception.Login_RestException;
 import messageboard.Exception.NotFindPageException;
 import messageboard.entity.Board;
