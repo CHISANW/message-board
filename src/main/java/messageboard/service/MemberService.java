@@ -19,7 +19,4 @@ public interface MemberService {
 
     Boolean findPasswordByEmailAndIdAndName(String username,String email, String loginId);
 
-//    Boolean findByCaseSensitiveEmail(String email);
-
-
 }
